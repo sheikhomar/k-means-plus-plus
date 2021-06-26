@@ -2,13 +2,37 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <chrono>
 #include <string>
 #include <boost/array.hpp>
 #include <blaze/Math.h>
+
 using blaze::StaticVector;
 using blaze::DynamicVector;
 
 using namespace std;
+
+template <class TimeT = std::chrono::milliseconds,
+          class ClockT = std::chrono::steady_clock>
+class Timer
+{
+    using timep_t = typename ClockT::time_point;
+    timep_t _start = ClockT::now(), _end = {};
+
+public:
+    void start() { 
+        _end = timep_t{}; 
+        _start = ClockT::now(); 
+    }
+    
+    void stop() { _end = ClockT::now(); }
+    
+    size_t durationInMs() const { 
+        return (std::chrono::duration_cast<TimeT>(_end - _start).count());
+    }
+};
+
+
 
 void parseLineAsIntegerArray(const std::string& line, const std::string& delimiter, uint* storage, uint storageSize) {
    int start = 0;
@@ -32,7 +56,7 @@ void parseLineAsIntegerArray(const std::string& line, const std::string& delimit
    storage[i] = parsedInt;
 }
 
-void readEnronDataSet(const std::string& path) {
+blaze::CompressedMatrix<uint> readEnronDataSet(const std::string& path) {
    cout << "Reading Enron dataset from " << path << "...\n";
    
    ifstream fileHandle;
@@ -55,26 +79,38 @@ void readEnronDataSet(const std::string& path) {
       printf("DB Size: %d\n", dbSize);
       printf("Vocab Size: %d\n", vocabularySize);
 
+      blaze::CompressedMatrix<uint> X(dbSize, vocabularySize);
+
       uint counter = 0;
       while (getline(fileHandle, line)) {
-         printf("Line: %s\n", line.c_str());
+         // printf("Line: %s\n", line.c_str());
 
          uint numbers[3] = { 0, 0, 0 };
          parseLineAsIntegerArray(line, " ", numbers, 3);
-         
-         printf("- DocId:  %d\n", numbers[0]);
-         printf("- WordId: %d\n", numbers[1]);
-         printf("- Count:  %d\n", numbers[2]);
 
+         uint docId = numbers[0];
+         uint wordId = numbers[1];
+         uint count = numbers[2];
+         
+         // printf("- DocId:  %d\n", docId);
+         // printf("- WordId: %d\n", wordId);
+         // printf("- Count:  %d\n", count);
+
+         X(docId, wordId) = count;
+         
          counter++;
 
-         if (counter > 10)
+         if (counter > 100000)
             break;
       }
       fileHandle.close();
+
+      return X;
    } else {
       cout << "File never opened!\n";
    }
+   blaze::CompressedMatrix<uint> zero(0, 0);
+   return zero;
 }
 
 int main()
@@ -105,7 +141,14 @@ int main()
    // Printing the result of the vector addition
    std::cout << "c =\n" << c << "\n";
 
-   readEnronDataSet("data/docword.enron.txt");
+   Timer clock;
+   clock.start();
+   blaze::CompressedMatrix<uint> data = readEnronDataSet("data/docword.enron.txt");
+   clock.stop();
+
+   size_t durationInMs = clock.durationInMs();
+   printf("Read %lu rows!\n", data.rows());
+   printf("Runtime %lu ms (%lu secs)\n", durationInMs, durationInMs / 1000);
 
    uint d[3] = {0, 0, 0};
 
