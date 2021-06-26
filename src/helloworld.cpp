@@ -153,7 +153,7 @@ blaze::DynamicMatrix<double> initialiseCentroids(const blaze::DynamicMatrix<doub
    return centrioids;
 }
 
-void lloydAlgorithm(const blaze::DynamicMatrix<double>& matrix, uint k, uint n_iter) {
+void kMeansLloyd(const blaze::DynamicMatrix<double>& matrix, uint k, uint maxIterations) {
    size_t n = matrix.rows();
    size_t d = matrix.columns();
 
@@ -169,7 +169,7 @@ void lloydAlgorithm(const blaze::DynamicMatrix<double>& matrix, uint k, uint n_i
    blaze::DynamicVector<size_t> clusterAssignments(n);
    blaze::DynamicVector<size_t> clusterMemberCounts(k);
 
-   for (size_t i = 0; i < n_iter; i++) {
+   for (size_t i = 0; i < maxIterations; i++) {
       // For each data point, assign the centroid that is closest to it.
       for (size_t p = 0; p < n; p++) {
          double bestDistance = numeric_limits<double>::max();
@@ -193,6 +193,11 @@ void lloydAlgorithm(const blaze::DynamicMatrix<double>& matrix, uint k, uint n_i
       }
 
       // Move centroids based on the cluster assignments.
+      
+      // First, save a copy of the centroids matrix.
+      blaze::DynamicMatrix<double> oldCentrioids(centrioids);
+
+      // Set all elements to zero.
       centrioids = 0; // Reset centroids.
       clusterMemberCounts = 0; // Reset cluster member counts.
       
@@ -208,10 +213,17 @@ void lloydAlgorithm(const blaze::DynamicMatrix<double>& matrix, uint k, uint n_i
       }
 
       cout << "Centroids after iteration " << i << ": \n" << centrioids << "\n";
+
+      auto diff = blaze::sum(blaze::abs(centrioids - oldCentrioids));
+
+      if (diff < 0.001) {
+         cout << "Stopping k-Means as centroids do not improve: " << diff << "\n";
+         break;
+      }
    }
 }
 
-void runLloydAlgorithm() {
+void runKMeansLloyd() {
    blaze::DynamicMatrix<double> data{
       { -0.794152276623841F, 2.104951171962879F, },
       { -9.151551856068068F, -4.812864488195191F, },
@@ -314,12 +326,12 @@ void runLloydAlgorithm() {
       { -6.2539305108541825F, -7.108786009916786F, },
       { 0.08525185826796045F, 3.6452829679480585F, },
    };
-   lloydAlgorithm(data, 3, 20);
+   kMeansLloyd(data, 3, 20);
 }
 
 int main()
 {
    // runParseEnronData();
-   runLloydAlgorithm();
+   runKMeansLloyd();
    cout << "Done!\n";
 }
