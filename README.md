@@ -29,3 +29,11 @@ cd data
 wget https://archive.ics.uci.edu/ml/machine-learning-databases/bag-of-words/docword.enron.txt.gz
 gunzip docword.enron.txt.gz
 ```
+
+Build via CMake:
+
+```bash
+cmake -S standalone -B build/standalone
+cmake --build build/standalone
+./build/standalone/kmeans --help
+```
