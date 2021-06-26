@@ -7,6 +7,7 @@
 #include <string>
 #include <boost/array.hpp>
 #include <blaze/Math.h>
+#include <boost/range/algorithm_ext/erase.hpp>
 
 using blaze::StaticVector;
 using blaze::DynamicVector;
@@ -153,7 +154,7 @@ blaze::DynamicMatrix<double> initialiseCentroids(const blaze::DynamicMatrix<doub
    return centrioids;
 }
 
-void kMeansLloyd(const blaze::DynamicMatrix<double>& matrix, uint k, uint maxIterations) {
+blaze::DynamicMatrix<double> initialiseCentroidsKMeansPlusPlus(const blaze::DynamicMatrix<double>& matrix, uint k) {
    size_t n = matrix.rows();
    size_t d = matrix.columns();
 
@@ -162,9 +163,80 @@ void kMeansLloyd(const blaze::DynamicMatrix<double>& matrix, uint k, uint maxIte
    static std::mt19937 randomEngine(42);
    uniform_int_distribution<int> randomGen(0, n-1);
 
-   blaze::DynamicMatrix<double> centrioids = initialiseCentroids(matrix, k);
+   blaze::DynamicMatrix<double> centrioids(k, d);
+   std::vector<uint> availableIndices(n);
 
-   cout << "Initial centroids: \n" << centrioids << "\n";
+   // Fill with 0, 1, 2, ..., N.
+   std::iota(availableIndices.begin(), availableIndices.end(), 0); 
+   
+   uint chosenCentroids = 1;
+   for (size_t c = 0; c < k; c++) {
+      uint centroidIndex = -1;
+
+      if (c == 0) {
+         // Pick the first centroid uniformly at random.
+         centroidIndex = randomGen(randomEngine);
+      } else {
+
+         blaze::DynamicVector<double> smallestDistances(n);
+
+         // For each point, find the distance to the nearest centroid for all
+         // the centroids that are select so far.
+         for (uint p : availableIndices) {
+            double smallestDistance = numeric_limits<double>::max();
+            
+            // Loop through previously selected clusters.
+            for (size_t c2 = 0; c2 < c; c2++) {
+
+               // Compute the L2 norm between point p and centroid c2.
+               const double distance = blaze::norm(blaze::row(matrix, p) - blaze::row(centrioids, c2));
+
+               // Decide if current distance is better.
+               if (distance < smallestDistance) {
+                  smallestDistance = distance;
+               }
+            }
+
+            smallestDistances[p] = smallestDistance;
+         }
+         
+         // Pick a point based on a weighted probability
+
+         // Square distances
+         smallestDistances *= smallestDistances;
+
+         // Normalise.
+         smallestDistances /= blaze::sum(smallestDistances);
+
+         // Pick the index of a point randomly selected based on the weights.
+         std::discrete_distribution<uint> weightedChoice(smallestDistances.begin(), smallestDistances.end());
+         uint nextClusterCandidate = weightedChoice(randomEngine);
+
+         // Assign centroid index.
+         centroidIndex = availableIndices[nextClusterCandidate];
+      }
+      
+      cout << "Centroid index for " << c << " => " << centroidIndex << "\n";
+      
+      // Copy point over centroids matrix.
+      blaze::row(centrioids, c) = blaze::row(matrix, centroidIndex);
+
+      // Remove it from the candidate list so the point cannot be
+      // picked as another centroid.
+      boost::remove_erase(availableIndices, centroidIndex);
+   }
+
+   return centrioids;
+}
+
+void kMeansLloyd(const blaze::DynamicMatrix<double>& matrix, blaze::DynamicMatrix<double>& centrioids, uint k, uint maxIterations) {
+   size_t n = matrix.rows();
+   size_t d = matrix.columns();
+
+   // Initialise the sequence of pseudo-random numbers with a fixed random seed.
+   static std::random_device seed;
+   static std::mt19937 randomEngine(42);
+   uniform_int_distribution<int> randomGen(0, n-1);
 
    blaze::DynamicVector<size_t> clusterAssignments(n);
    blaze::DynamicVector<size_t> clusterMemberCounts(k);
@@ -326,7 +398,12 @@ void runKMeansLloyd() {
       { -6.2539305108541825F, -7.108786009916786F, },
       { 0.08525185826796045F, 3.6452829679480585F, },
    };
-   kMeansLloyd(data, 3, 20);
+   
+   auto centrioids = initialiseCentroidsKMeansPlusPlus(data, 3);
+   //auto centrioids = initialiseCentroids(data, 3);
+   cout << "Initial centroids: \n" << centrioids << "\n";
+
+   kMeansLloyd(data, centrioids, 3, 20);
 }
 
 int main()
