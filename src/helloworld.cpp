@@ -10,20 +10,66 @@ using blaze::DynamicVector;
 
 using namespace std;
 
+void parseLineAsIntegerArray(const std::string& line, const std::string& delimiter, uint* storage, uint storageSize) {
+   int start = 0;
+   int end = line.find(delimiter);
+   int i = 0;
+   while (end != -1) {
+      int parsedInt = std::stoi(line.substr(start, end - start));
+      if (i >= storageSize) {
+         throw "Found more integers than allocated memory!";
+      }
+      storage[i] = parsedInt;
+      i++;
+      start = end + delimiter.size();
+      end = line.find(delimiter, start);
+   }
+
+   int parsedInt = std::stoi(line.substr(start, end - start));
+   if (i >= storageSize) {
+      throw "Found more integers than allocated memory!";
+   }
+   storage[i] = parsedInt;
+}
+
 void readEnronDataSet(const std::string& path) {
    cout << "Reading Enron dataset from " << path << "...\n";
    
    ifstream fileHandle;
    fileHandle.open(path.c_str(), ios::in);
    if (fileHandle.is_open()) {
-      std::string line;
+      string line;
+
+      // First line contains the number of documents.
+      getline(fileHandle, line);
+      uint dbSize = std::stoi(line);
+
+      // Second line contains the number of words in the vocabulary
+      getline(fileHandle, line);
+      uint vocabularySize = std::stoi(line);
+
+      // Third line contains the total number of words in the collection.
+      // Ignore this for now.
+      getline(fileHandle, line);
+
+      printf("DB Size: %d\n", dbSize);
+      printf("Vocab Size: %d\n", vocabularySize);
+
       uint counter = 0;
       while (getline(fileHandle, line)) {
-         printf("%s\n", line.c_str());
+         printf("Line: %s\n", line.c_str());
+
+         uint numbers[3] = { 0, 0, 0 };
+         parseLineAsIntegerArray(line, " ", numbers, 3);
+         
+         printf("- DocId:  %d\n", numbers[0]);
+         printf("- WordId: %d\n", numbers[1]);
+         printf("- Count:  %d\n", numbers[2]);
+
          counter++;
-         if (counter > 10) {
+
+         if (counter > 10)
             break;
-         }
       }
       fileHandle.close();
    } else {
@@ -60,5 +106,16 @@ int main()
    std::cout << "c =\n" << c << "\n";
 
    readEnronDataSet("data/docword.enron.txt");
+
+   uint d[3] = {0, 0, 0};
+
+   parseLineAsIntegerArray("4 1153 13\n", " ", d, 3);
+
+   for (uint i = 0; i < 3; i++)
+   {
+      printf("%d\n", d[i]);
+   }
+   
+
    cout << "Done!\n";
 }
