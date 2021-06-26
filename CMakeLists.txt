@@ -8,7 +8,30 @@ project(
   LANGUAGES CXX
 )
 
-# ---- Include guards ----
+#
+# Set project options
+#
+
+include(cmake/StandardSettings.cmake)
+include(cmake/Utils.cmake)
+message(STATUS "Started CMake for ${PROJECT_NAME} v${PROJECT_VERSION}...\n")
+
+#
+# Setup alternative names
+#
+
+if(${PROJECT_NAME}_USE_ALT_NAMES)
+	string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWERCASE)
+	string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPERCASE)
+else()
+	set(PROJECT_NAME_LOWERCASE ${PROJECT_NAME})
+	set(PROJECT_NAME_UPPERCASE ${PROJECT_NAME})
+endif()
+
+
+#
+# Prevent building in the source directory
+#
 
 if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
   message(
@@ -16,6 +39,15 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
       "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there."
   )
 endif()
+
+#
+# Enable package managers
+#
+
+include(cmake/Conan.cmake)
+include(cmake/Vcpkg.cmake)
+
+
 
 # ---- Add dependencies via CPM ----
 # see https://github.com/TheLartians/CPM.cmake for more info
@@ -34,46 +66,214 @@ CPMAddPackage(
 
 # ---- Add source files ----
 
-# Note: globbing sources is considered bad practice as CMake's generators may not detect new files
-# automatically. Keep that in mind when changing files, or explicitly mention them here.
-file(GLOB_RECURSE headers CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp")
-file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
 
-# ---- Create library ----
+#
+# Create library, setup header and source files
+#
 
-# Note: for header-only libraries change all PUBLIC flags to INTERFACE and create an interface
-# target: add_library(KMeans INTERFACE)
-add_library(KMeans ${headers} ${sources})
-# add_executable(KMeans ${headers} ${sources})
+# Find all headers and implementation files
+include(cmake/SourcesAndHeaders.cmake)
 
-set_target_properties(KMeans PROPERTIES CXX_STANDARD 17)
+if(${PROJECT_NAME}_BUILD_EXECUTABLE)
+  add_executable(${PROJECT_NAME} ${exe_sources})
+  add_library(${PROJECT_NAME}_LIB ${headers} ${sources})
+elseif(${PROJECT_NAME}_BUILD_HEADERS_ONLY)
+  add_library(${PROJECT_NAME} INTERFACE)
+else()
+  add_library(
+    ${PROJECT_NAME}
+    ${headers}
+    ${sources}
+  )
+endif()
+
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17 OUTPUT_NAME "kmeans")
+set_target_properties(${PROJECT_NAME}_LIB PROPERTIES CXX_STANDARD 17)
+
+verbose_message("Found the following header files:")
+verbose_message(${headers})
+verbose_message("Found the following source files:")
+if(${PROJECT_NAME}_BUILD_EXECUTABLE)
+	verbose_message(${exe_sources})
+else()
+	verbose_message(${sources})
+endif()
+message(STATUS "Added all header and implementation files.\n")
+
+
+#
+# Set the project standard and warnings
+#
+
+if(${PROJECT_NAME}_BUILD_HEADERS_ONLY)
+  target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
+else()
+  target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+endif()
+include(cmake/CompilerWarnings.cmake)
+set_project_warnings(${PROJECT_NAME})
+
+verbose_message("Applied compiler warnings. Using standard ${CXX_STANDARD}.\n")
+
+#
+# Enable Doxygen
+#
+
+include(cmake/Doxygen.cmake)
+
+#
+# Set the build/user include directories
+#
+
+# Allow usage of header files in the `source` directory, but only for utilities
+if(${PROJECT_NAME}_BUILD_HEADERS_ONLY)
+  target_include_directories(
+    ${PROJECT_NAME}
+    INTERFACE 
+      $<INSTALL_INTERFACE:include>    
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  )
+else()
+  target_include_directories(
+    ${PROJECT_NAME}
+    PUBLIC 
+      $<INSTALL_INTERFACE:include>    
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    PRIVATE
+      ${CMAKE_CURRENT_SOURCE_DIR}/source
+  )
+	if(${PROJECT_NAME}_BUILD_EXECUTABLE)
+		target_include_directories(
+			${PROJECT_NAME}_LIB
+			PUBLIC 
+				$<INSTALL_INTERFACE:include>    
+				$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+			PRIVATE
+				${CMAKE_CURRENT_SOURCE_DIR}/source
+		)
+	endif()
+endif()
+
+message(STATUS "Finished setting up include directories.")
+
+
 
 # being a cross-platform target, we enforce standards conformance on MSVC
-target_compile_options(KMeans PUBLIC "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/permissive->")
+target_compile_options(${PROJECT_NAME} PUBLIC "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/permissive->")
+target_compile_options(${PROJECT_NAME}_LIB PUBLIC "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/permissive->")
 
-# Link dependencies
-target_link_libraries(KMeans PRIVATE fmt::fmt)
 
-target_include_directories(
-  KMeans PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-                 $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>
+#
+# Model project dependencies 
+#
+
+# Identify and link with the specific "packages" the project uses
+# find_package(package_name package_version REQUIRED package_type [other_options])
+#target_link_libraries(
+#  ${PROJECT_NAME}
+#  PUBLIC
+#    dependency1 ...
+#  PRIVATE
+#    dependency2 ...
+#    ${PROJECT_NAME}_PROJECT_OPTIONS        
+#    ${PROJECT_NAME}_PROJECT_WARNINGS        
+#)
+
+
+target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
+
+verbose_message("Successfully added all dependencies and linked against them.")
+
+
+#
+# Provide alias to library for 
+#
+
+if(${PROJECT_NAME}_BUILD_EXECUTABLE)
+  add_executable(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+else()
+  add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+endif()
+
+verbose_message("Project is now aliased as ${PROJECT_NAME}::${PROJECT_NAME}.\n")
+
+
+
+#
+# Format the project using the `clang-format` target (i.e: cmake --build build --target clang-format)
+#
+
+add_clang_format_target()
+
+#
+# Install library for easy downstream inclusion
+#
+
+include(GNUInstallDirs)
+install(
+  TARGETS
+    ${PROJECT_NAME}
+  EXPORT
+    ${PROJECT_NAME}Targets
+  LIBRARY DESTINATION
+    ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION
+    ${CMAKE_INSTALL_BINDIR}
+  ARCHIVE DESTINATION
+    ${CMAKE_INSTALL_LIBDIR}
+  INCLUDES DESTINATION
+    include
+  PUBLIC_HEADER DESTINATION
+    include
 )
 
-# ---- Create an installable target ----
-# this allows users to install and find the library via `find_package()`.
-
-# the location where the project's version header will be placed should match the project's regular
-# header paths
-string(TOLOWER ${PROJECT_NAME}/version.h VERSION_HEADER_LOCATION)
-
-packageProject(
-  NAME ${PROJECT_NAME}
-  VERSION ${PROJECT_VERSION}
-  NAMESPACE ${PROJECT_NAME}
-  BINARY_DIR ${PROJECT_BINARY_DIR}
-  INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
-  INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
-  VERSION_HEADER "${VERSION_HEADER_LOCATION}"
-  COMPATIBILITY SameMajorVersion
-  DEPENDENCIES "fmt 7.1.3"
+install(
+  EXPORT 
+    ${PROJECT_NAME}Targets
+  FILE
+    ${PROJECT_NAME}Targets.cmake
+  NAMESPACE
+    ${PROJECT_NAME}::
+  DESTINATION
+    ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
+
+#
+# Add version header
+#
+
+configure_file(
+    ${CMAKE_CURRENT_LIST_DIR}/cmake/version.hpp.in
+    include/${PROJECT_NAME_LOWERCASE}/version.hpp
+    @ONLY
+)
+
+install(
+  FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/include/${PROJECT_NAME_LOWERCASE}/version.hpp
+  DESTINATION
+    include/${PROJECT_NAME_LOWERCASE}
+)
+
+#
+# Install the `include` directory
+#
+
+install(
+  DIRECTORY
+    include/${PROJECT_NAME_LOWERCASE}
+  DESTINATION
+    include
+)
+
+verbose_message("Install targets succesfully build. Install with `cmake --build <build_directory> --target install --config <build_config>`.")
+
+#
+# Unit testing setup
+#
+
+if(${PROJECT_NAME}_ENABLE_UNIT_TESTING)
+  enable_testing()
+	message(STATUS "Build unit tests for the project. Tests should always be found in the test folder\n")
+  add_subdirectory(test)
+endif()
