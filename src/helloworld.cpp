@@ -32,8 +32,6 @@ public:
     }
 };
 
-
-
 void parseLineAsIntegerArray(const std::string& line, const std::string& delimiter, uint* storage, uint storageSize) {
    int start = 0;
    int end = line.find(delimiter);
@@ -113,34 +111,7 @@ blaze::CompressedMatrix<uint> readEnronDataSet(const std::string& path) {
    return zero;
 }
 
-int main()
-{
-   vector<string> msg {"Hello", "World"};
-   
-   for (const string& word : msg)
-   {
-      cout << word << " ";
-   }
-   cout << endl;
-
-
-   // Instantiation of a static 3D column vector. The vector is directly initialized as
-   //    ( 4 -2  5 )
-   StaticVector<int,3UL> a{ 4, -2, 5 };
-
-   // Instantiation of a dynamic 3D column vector. Via the subscript operator the values are set to
-   //    ( 2  5 -3 )
-   DynamicVector<int> b( 3UL );
-   b[0] = 2;
-   b[1] = 5;
-   b[2] = -3;
-
-   // Adding the vectors a and b
-   DynamicVector<int> c = a + b;
-
-   // Printing the result of the vector addition
-   std::cout << "c =\n" << c << "\n";
-
+void runParseEnronData() {
    Timer clock;
    clock.start();
    blaze::CompressedMatrix<uint> data = readEnronDataSet("data/docword.enron.txt");
@@ -149,7 +120,9 @@ int main()
    size_t durationInMs = clock.durationInMs();
    printf("Read %lu rows!\n", data.rows());
    printf("Runtime %lu ms (%lu secs)\n", durationInMs, durationInMs / 1000);
+}
 
+void testParseLineAsIntegerArray() {
    uint d[3] = {0, 0, 0};
 
    parseLineAsIntegerArray("4 1153 13\n", " ", d, 3);
@@ -158,7 +131,10 @@ int main()
    {
       printf("%d\n", d[i]);
    }
-   
+}
 
+int main()
+{
+   runParseEnronData();
    cout << "Done!\n";
 }
