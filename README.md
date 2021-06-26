@@ -20,3 +20,12 @@ sudo make install
 cd ..
 rm -rf blaze-3.8/
 ```
+
+Download Enron data:
+
+```bash
+mkdir data
+cd data
+wget https://archive.ics.uci.edu/ml/machine-learning-databases/bag-of-words/docword.enron.txt.gz
+gunzip docword.enron.txt.gz
+```

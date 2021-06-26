@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <vector>
 #include <string>
 #include <boost/array.hpp>
@@ -7,6 +9,27 @@ using blaze::StaticVector;
 using blaze::DynamicVector;
 
 using namespace std;
+
+void readEnronDataSet(const std::string& path) {
+   cout << "Reading Enron dataset from " << path << "...\n";
+   
+   ifstream fileHandle;
+   fileHandle.open(path.c_str(), ios::in);
+   if (fileHandle.is_open()) {
+      std::string line;
+      uint counter = 0;
+      while (getline(fileHandle, line)) {
+         printf("%s\n", line.c_str());
+         counter++;
+         if (counter > 10) {
+            break;
+         }
+      }
+      fileHandle.close();
+   } else {
+      cout << "File never opened!\n";
+   }
+}
 
 int main()
 {
@@ -35,4 +58,7 @@ int main()
 
    // Printing the result of the vector addition
    std::cout << "c =\n" << c << "\n";
+
+   readEnronDataSet("data/docword.enron.txt");
+   cout << "Done!\n";
 }
