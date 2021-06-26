@@ -194,6 +194,7 @@ void lloydAlgorithm(const blaze::DynamicMatrix<double>& matrix, uint k, uint n_i
 
       // Move centroids based on the cluster assignments.
       centrioids = 0; // Reset centroids.
+      clusterMemberCounts = 0; // Reset cluster member counts.
       
       for (size_t p = 0; p < n; p++) {
          const size_t c = clusterAssignments[p];
