@@ -2,15 +2,205 @@
 
 using namespace kmeans;
 
-KMeans::KMeans(uint k, bool kpp, uint miter, double convDiff) :
-    numOfClusters(k),
-    initKMeansPlusPlus(kpp),
-    maxIterations(miter),
-    convergenceDiff(convDiff) {
+KMeans::KMeans(uint k, bool kpp, uint miter, double convDiff, int randSeed) : numOfClusters(k), initKMeansPlusPlus(kpp), maxIterations(miter), convergenceDiff(convDiff), randomSeed(randSeed)
+{
 }
 
-blaze::DynamicVector<size_t> 
-KMeans::run(const blaze::DynamicMatrix<double>& data) {
-    blaze::DynamicVector<size_t> d = {10, 20, 20};
-    return d;
+blaze::DynamicVector<size_t>
+KMeans::run(const blaze::DynamicMatrix<double> &data)
+{
+  auto centroids = (this->initKMeansPlusPlus ? this->initCentroidsKMeansPlusPlus(data) : this->initCentroidsNaive(data));
+  return this->runLloydsAlgorithm(data, centroids);
+}
+
+blaze::DynamicMatrix<double>
+KMeans::initCentroidsNaive(const blaze::DynamicMatrix<double> &matrix)
+{
+  size_t n = matrix.rows();
+  size_t d = matrix.columns();
+  auto k = this->numOfClusters;
+
+  // Initialise the sequence of pseudo-random numbers with a fixed random seed.
+  static std::random_device seed;
+  static std::mt19937 randomEngine(this->randomSeed);
+  std::uniform_int_distribution<size_t> randomGen(0, n - 1);
+
+  blaze::DynamicMatrix<double> centroids(k, d);
+
+  for (size_t i = 0; i < k; i++)
+  {
+    size_t centroidIndex = randomGen(randomEngine);
+    blaze::row(centroids, i) = blaze::row(matrix, centroidIndex);
+  }
+
+  return centroids;
+}
+
+blaze::DynamicMatrix<double>
+KMeans::initCentroidsKMeansPlusPlus(const blaze::DynamicMatrix<double> &matrix)
+{
+  size_t n = matrix.rows();
+  size_t d = matrix.columns();
+  auto k = this->numOfClusters;
+
+  // Initialise the sequence of pseudo-random numbers with a fixed random seed.
+  static std::random_device seed;
+  static std::mt19937 randomEngine(this->randomSeed);
+  std::uniform_int_distribution<int> randomGen(0, n - 1);
+
+  blaze::DynamicMatrix<double> centroids(k, d);
+  std::vector<uint> availableIndices(n);
+
+  // Fill with 0, 1, 2, ..., N.
+  std::iota(availableIndices.begin(), availableIndices.end(), 0);
+
+  for (size_t c = 0; c < k; c++)
+  {
+    uint centroidIndex = 0;
+
+    if (c == 0)
+    {
+      // Pick the first centroid uniformly at random.
+      centroidIndex = randomGen(randomEngine);
+    }
+    else
+    {
+
+      blaze::DynamicVector<double> smallestDistances(n);
+
+      // For each point, find the distance to the nearest centroid for all
+      // the centroids that are select so far.
+      for (uint p : availableIndices)
+      {
+        double smallestDistance = std::numeric_limits<double>::max();
+
+        // Loop through previously selected clusters.
+        for (size_t c2 = 0; c2 < c; c2++)
+        {
+
+          // Compute the L2 norm between point p and centroid c2.
+          const double distance = blaze::norm(blaze::row(matrix, p) - blaze::row(centroids, c2));
+
+          // Decide if current distance is better.
+          if (distance < smallestDistance)
+          {
+            smallestDistance = distance;
+          }
+        }
+
+        smallestDistances[p] = smallestDistance;
+      }
+
+      // Pick a point based on a weighted probability
+
+      // Square distances
+      smallestDistances *= smallestDistances;
+
+      // Normalise.
+      smallestDistances /= blaze::sum(smallestDistances);
+
+      // Pick the index of a point randomly selected based on the weights.
+      std::discrete_distribution<uint> weightedChoice(smallestDistances.begin(), smallestDistances.end());
+      uint nextClusterCandidate = weightedChoice(randomEngine);
+
+      // Assign centroid index.
+      centroidIndex = availableIndices[nextClusterCandidate];
+    }
+
+    std::cout << "Centroid index for " << c << " => " << centroidIndex << "\n";
+
+    // Copy point over centroids matrix.
+    blaze::row(centroids, c) = blaze::row(matrix, centroidIndex);
+
+    // Remove it from the candidate list so the point cannot be
+    // picked as another centroid.
+    boost::remove_erase(availableIndices, centroidIndex);
+  }
+
+  return centroids;
+}
+
+blaze::DynamicVector<size_t>
+KMeans::runLloydsAlgorithm(const blaze::DynamicMatrix<double> &matrix, blaze::DynamicMatrix<double> centroids)
+{
+  size_t n = matrix.rows();
+  auto k = this->numOfClusters;
+
+  // Initialise the sequence of pseudo-random numbers with a fixed random seed.
+  static std::random_device seed;
+  static std::mt19937 randomEngine(42);
+  std::uniform_int_distribution<int> randomGen(0, n - 1);
+
+  blaze::DynamicVector<size_t> clusterAssignments(n);
+  blaze::DynamicVector<size_t> clusterMemberCounts(k);
+
+  for (size_t i = 0; i < this->maxIterations; i++)
+  {
+    // For each data point, assign the centroid that is closest to it.
+    for (size_t p = 0; p < n; p++)
+    {
+      double bestDistance = std::numeric_limits<double>::max();
+      size_t bestCluster = 0;
+
+      // Loop through all the clusters.
+      for (size_t c = 0; c < k; c++)
+      {
+
+        // Compute the L2 norm between point p and centroid c.
+        const double distance = blaze::norm(blaze::row(matrix, p) - blaze::row(centroids, c));
+
+        // Decide if current distance is better.
+        if (distance < bestDistance)
+        {
+          bestDistance = distance;
+          bestCluster = c;
+        }
+      }
+
+      // Assign cluster to point p.
+      clusterAssignments[p] = bestCluster;
+    }
+
+    // Move centroids based on the cluster assignments.
+
+    // First, save a copy of the centroids matrix.
+    blaze::DynamicMatrix<double> oldCentrioids(centroids);
+
+    // Set all elements to zero.
+    centroids = 0;           // Reset centroids.
+    clusterMemberCounts = 0; // Reset cluster member counts.
+
+    for (size_t p = 0; p < n; p++)
+    {
+      const size_t c = clusterAssignments[p];
+      blaze::row(centroids, c) += blaze::row(matrix, p);
+      clusterMemberCounts[c] += 1;
+    }
+
+    for (size_t c = 0; c < k; c++)
+    {
+      const auto count = std::max<size_t>(1, clusterMemberCounts[c]);
+      blaze::row(centroids, c) /= count;
+    }
+
+    std::cout << "Centroids after iteration " << i << ": \n"
+              << centroids << "\n";
+
+    // Compute the Frobenius norm
+    auto diffAbsMatrix = blaze::abs(centroids - oldCentrioids);
+    auto diffAbsSquaredMatrix = blaze::pow(diffAbsMatrix, 2); // Square each element.
+    auto frobeniusNormDiff = blaze::sqrt(blaze::sum(diffAbsSquaredMatrix));
+
+    std::cout << "Frobenius norm of centroids difference: " << frobeniusNormDiff << "!\n";
+
+    if (frobeniusNormDiff < this->convergenceDiff)
+    {
+      std::cout << "Stopping k-Means as centroids do not improve. Frobenius norm Diff: " << frobeniusNormDiff << "\n";
+      break;
+    }
+  }
+
+  // TODO: Fix this!
+  blaze::DynamicVector<size_t> retVal{10, 10, 10};
+  return retVal;
 }
