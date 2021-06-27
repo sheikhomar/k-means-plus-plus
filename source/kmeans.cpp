@@ -10,7 +10,7 @@ KMeans::KMeans(uint k, bool kpp, uint miter, double convDiff) :
 }
 
 blaze::DynamicVector<size_t> 
-run(const blaze::DynamicMatrix<double>& data) {
+KMeans::run(const blaze::DynamicMatrix<double>& data) {
     blaze::DynamicVector<size_t> d = {10, 20, 20};
     return d;
 }
