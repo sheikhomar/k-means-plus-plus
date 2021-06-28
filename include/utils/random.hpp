@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <random>
 #include <vector>
@@ -37,6 +38,14 @@ namespace utils
 
         std::shared_ptr<blaze::DynamicVector<size_t>>
         runWeightedReservoirSampling(const size_t k, const size_t n, blaze::DynamicVector<size_t> weights);
+
+        /**
+         * @brief Randomly select `k` indices from an array of size `n` with replacement.
+         * @param k The number of indices to pick from.
+         * @param weight A collection of weights associated with each entry.
+         */
+        std::shared_ptr<blaze::DynamicVector<size_t>>
+        choice(const size_t k, const size_t n, blaze::DynamicVector<size_t> weights);
 
     private:
         std::mt19937 randomEngine;

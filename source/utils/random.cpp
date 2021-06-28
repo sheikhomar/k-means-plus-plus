@@ -74,3 +74,21 @@ Random::runWeightedReservoirSampling(const size_t k, const size_t n, blaze::Dyna
 
     return data;
 }
+
+std::shared_ptr<blaze::DynamicVector<size_t>>
+Random::choice(const size_t k, const size_t n, blaze::DynamicVector<size_t> weights)
+{
+    assert(weights.size() == n);
+
+    auto result = std::make_shared<blaze::DynamicVector<size_t>>(k);
+
+    std::discrete_distribution<size_t> weightedChoice(weights.begin(), weights.end());
+    
+    for (size_t i = 0; i < k; i++)
+    {
+        size_t pickedIndex = weightedChoice(this->randomEngine);
+        (*result)[i] = pickedIndex;
+    }
+
+    return result;
+}
