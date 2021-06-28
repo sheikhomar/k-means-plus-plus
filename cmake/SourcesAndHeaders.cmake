@@ -1,5 +1,6 @@
 set(sources
     source/kmeans.cpp
+    source/cluster_assignment_list.cpp
 )
 
 set(exe_sources
@@ -9,4 +10,5 @@ set(exe_sources
 
 set(headers
     include/kmeans/kmeans.hpp
+    include/kmeans/cluster_assignment_list.hpp
 )
