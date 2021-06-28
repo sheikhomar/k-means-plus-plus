@@ -1,14 +1,16 @@
 #pragma once
 
-#include <string>
+#include <memory>
 #include <iostream>
 #include <random>
+#include <string>
 
 #include <blaze/Math.h>
 #include <boost/array.hpp>
 #include <boost/range/algorithm_ext/erase.hpp>
 
 #include <kmeans/cluster_assignment_list.hpp>
+#include <kmeans/clustering_result.hpp>
 
 namespace kmeans
 {
@@ -43,7 +45,7 @@ namespace kmeans
          * @param dataMatrix A NxD data matrix containing N data points where each point has D dimensions.
          * @param dataMatrix Initial k centroids where k is the number of required clusters.
          */
-        blaze::DynamicVector<size_t>
+        std::shared_ptr<ClusteringResult>
         runLloydsAlgorithm(const blaze::DynamicMatrix<double> &dataMatrix, blaze::DynamicMatrix<double> initialCentroids);
 
     public:
@@ -61,7 +63,7 @@ namespace kmeans
          * @brief Runs the algorithm.
          * @param data A NxD data matrix containing N data points where each point has D dimensions.
          */
-        blaze::DynamicVector<size_t>
+        std::shared_ptr<ClusteringResult>
         run(const blaze::DynamicMatrix<double> &data);
     };
 

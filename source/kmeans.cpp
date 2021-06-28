@@ -6,7 +6,7 @@ KMeans::KMeans(uint k, bool kpp, uint miter, double convDiff, int randSeed) : nu
 {
 }
 
-blaze::DynamicVector<size_t>
+std::shared_ptr<ClusteringResult>
 KMeans::run(const blaze::DynamicMatrix<double> &data)
 {
   auto centroids = (this->initKMeansPlusPlus ? this->initCentroidsKMeansPlusPlus(data) : this->initCentroidsNaive(data));
@@ -120,7 +120,7 @@ KMeans::initCentroidsKMeansPlusPlus(const blaze::DynamicMatrix<double> &matrix)
   return centroids;
 }
 
-blaze::DynamicVector<size_t>
+std::shared_ptr<ClusteringResult>
 KMeans::runLloydsAlgorithm(const blaze::DynamicMatrix<double> &matrix, blaze::DynamicMatrix<double> centroids)
 {
   size_t n = matrix.rows();
@@ -134,7 +134,6 @@ KMeans::runLloydsAlgorithm(const blaze::DynamicMatrix<double> &matrix, blaze::Dy
   blaze::DynamicVector<size_t> clusterMemberCounts(k);
   kmeans::ClusterAssignmentList cal(n, this->numOfClusters);
   
-
   for (size_t i = 0; i < this->maxIterations; i++)
   {
     // For each data point, assign the centroid that is closest to it.
@@ -201,7 +200,5 @@ KMeans::runLloydsAlgorithm(const blaze::DynamicMatrix<double> &matrix, blaze::Dy
     }
   }
 
-  // TODO: Fix this!
-  blaze::DynamicVector<size_t> retVal{10, 10, 10};
-  return retVal;
+  return std::make_shared<ClusteringResult>(cal, centroids);
 }

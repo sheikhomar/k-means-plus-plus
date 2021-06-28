@@ -111,6 +111,7 @@ int main() {
     { 0.08525185826796045F, 3.6452829679480585F, },
   };
 
-  auto clusterLabels = kMeansAlg.run(data);
-  std::cout << "Cluster labels: \n" << clusterLabels <<  "\n" ;
+  auto result = kMeansAlg.run(data);
+
+  std::cout << "Cluster labels: \n" << result->getCentroids() <<  "\n" ;
 }
