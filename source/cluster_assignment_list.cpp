@@ -19,3 +19,15 @@ ClusterAssignmentList::getCluster(size_t pointIndex)
     // TODO: Ensure arguments are not out of range to avoid runtime errors.
     return clusters[pointIndex];
 }
+
+uint
+ClusterAssignmentList::getNumberOfPoints()
+{
+    return this->numOfPoints;
+}
+
+uint
+ClusterAssignmentList::getNumberOfClusters()
+{
+    return this->numOfClusters;
+}

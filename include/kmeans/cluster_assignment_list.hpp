@@ -38,6 +38,18 @@ namespace kmeans
         size_t
         getCluster(size_t pointIndex);
 
+        /**
+         * Returns the total number of points in the dataset.
+         */
+        uint
+        getNumberOfPoints();
+
+        /**
+         * Return the number of clusters that are generated.
+         */
+        uint
+        getNumberOfClusters();
+
     private:
         /**
          * The total number of points in the dataset.
@@ -45,7 +57,7 @@ namespace kmeans
         uint numOfPoints;
 
         /**
-         * The number of cluster that are generated.
+         * The number of clusters that are generated.
          */
         uint numOfClusters;
 
