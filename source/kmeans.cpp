@@ -131,8 +131,9 @@ KMeans::runLloydsAlgorithm(const blaze::DynamicMatrix<double> &matrix, blaze::Dy
   static std::mt19937 randomEngine(42);
   std::uniform_int_distribution<int> randomGen(0, n - 1);
 
-  blaze::DynamicVector<size_t> clusterAssignments(n);
   blaze::DynamicVector<size_t> clusterMemberCounts(k);
+  kmeans::ClusterAssignmentList cal(n, this->numOfClusters);
+  
 
   for (size_t i = 0; i < this->maxIterations; i++)
   {
@@ -157,8 +158,8 @@ KMeans::runLloydsAlgorithm(const blaze::DynamicMatrix<double> &matrix, blaze::Dy
         }
       }
 
-      // Assign cluster to point p.
-      clusterAssignments[p] = bestCluster;
+      // Assign cluster to the point p.
+      cal.assign(p, bestCluster, bestDistance);
     }
 
     // Move centroids based on the cluster assignments.
@@ -172,7 +173,7 @@ KMeans::runLloydsAlgorithm(const blaze::DynamicMatrix<double> &matrix, blaze::Dy
 
     for (size_t p = 0; p < n; p++)
     {
-      const size_t c = clusterAssignments[p];
+      const size_t c = cal.getCluster(p);
       blaze::row(centroids, c) += blaze::row(matrix, p);
       clusterMemberCounts[c] += 1;
     }

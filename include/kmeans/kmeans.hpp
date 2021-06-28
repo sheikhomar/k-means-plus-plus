@@ -8,6 +8,8 @@
 #include <boost/array.hpp>
 #include <boost/range/algorithm_ext/erase.hpp>
 
+#include <kmeans/cluster_assignment_list.hpp>
+
 namespace kmeans
 {
     /**
