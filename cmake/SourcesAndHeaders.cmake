@@ -2,6 +2,7 @@ set(sources
     source/kmeans.cpp
     source/cluster_assignment_list.cpp
     source/clustering_result.cpp
+    source/coresets/cora.cpp
 )
 
 set(exe_sources
@@ -13,4 +14,5 @@ set(headers
     include/kmeans/kmeans.hpp
     include/kmeans/cluster_assignment_list.hpp
     include/kmeans/clustering_result.hpp
+    include/coresets/cora.hpp
 )
