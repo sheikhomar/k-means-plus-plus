@@ -39,16 +39,22 @@ namespace kmeans
         getCluster(size_t pointIndex);
 
         /**
-         * Returns the total number of points in the dataset.
+         * @brief Returns the total number of points in the dataset.
          */
         uint
         getNumberOfPoints();
 
         /**
-         * Return the number of clusters that are generated.
+         * @brief Returns the number of clusters that are generated.
          */
         uint
         getNumberOfClusters();
+
+        /**
+         * @brief Returns the distance of each point to its assigned cluster's centroid.
+         */
+        blaze::DynamicVector<double>&
+        getCentroidDistances();
 
     private:
         /**

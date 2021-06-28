@@ -31,3 +31,9 @@ ClusterAssignmentList::getNumberOfClusters()
 {
     return this->numOfClusters;
 }
+
+blaze::DynamicVector<double>&
+ClusterAssignmentList::getCentroidDistances()
+{
+    return this->distances;
+}
