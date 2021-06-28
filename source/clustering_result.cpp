@@ -3,7 +3,7 @@
 using namespace kmeans;
 
 ClusteringResult::ClusteringResult(const kmeans::ClusterAssignmentList &assignments, blaze::DynamicMatrix<double> &finalCentroids) :
-    clusterAssignments(clusterAssignments), centroids(finalCentroids)
+    clusterAssignments(assignments), centroids(finalCentroids)
 {
 }
 
