@@ -1,14 +1,12 @@
 // #include <cxxopts.hpp>
 #include <kmeans/kmeans.hpp>
+#include <coresets/cora.hpp>
 
 using namespace std;
 using namespace kmeans;
 
 int main() {
-  // cxxopts::Options options(*argv, "A program to welcome the world!");
-
-  kmeans::KMeans kMeansAlg(3, true, 100U, 0.0001, 42);
-  blaze::DynamicMatrix<double> data {
+    blaze::DynamicMatrix<double> data {
     { -0.794152276623841F, 2.104951171962879F, },
     { -9.151551856068068F, -4.812864488195191F, },
     { -11.44182630908269F, -4.4578144103096555F, },
@@ -111,7 +109,10 @@ int main() {
     { 0.08525185826796045F, 3.6452829679480585F, },
   };
 
-  auto result = kMeansAlg.run(data);
+  // kmeans::KMeans kMeansAlg(3, true, 100U, 0.0001, 42);
+  // auto result = kMeansAlg.run(data);
+  // std::cout << "Cluster labels: \n" << result->getCentroids() <<  "\n" ;
 
-  std::cout << "Cluster labels: \n" << result->getCentroids() <<  "\n" ;
+  coresets::Cora cora;
+  cora.run(data);
 }
