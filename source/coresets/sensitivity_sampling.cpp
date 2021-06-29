@@ -37,6 +37,8 @@ SensitivySampling::run(const blaze::DynamicMatrix<double> &data)
     // Step 2c: compute the sampling distribution: cost(p, A)/cost(A)
     auto samplingDistribution = costs / sumOfCosts;
 
+    std::cout << "\n\nSampling distribution: \n" << samplingDistribution << "\n";
+
     // TODO: Investigate why small weights generate samples that are all zeros.
     auto sampledIndices = random.choice(T, n, samplingDistribution * 100);
     std::cout << "Sampled T points: \n"
@@ -54,7 +56,11 @@ SensitivySampling::run(const blaze::DynamicMatrix<double> &data)
 
         // The weight of the sampled point is now: cost(A) / (T*cost(p,A))
         sampledPointWeights[j] = sumOfCosts / scaledCostPofA;
+
+        printf("Sampled point %3ld gets weight %.5f \n", sampledPointIndex, sampledPointWeights[j]);
     }
+
+    printf("\n\n");
 
     // Initialise an array to store center weights w_i
     blaze::DynamicVector<double> centerWeights(kPrime);
@@ -71,13 +77,18 @@ SensitivySampling::run(const blaze::DynamicMatrix<double> &data)
         // Compute cost(A)/(T*cost(p,A))
         double weightContributionOfP = sumOfCosts / (T * costPOfA);
 
-        std::cout << "Point " << p << " contributes " << weightContributionOfP << " to cluster " << clusterOfPointP << "\n";
+        // std::cout << "Point " << p << " contributes " << weightContributionOfP << " to cluster " << clusterOfPointP << "\n";
+
+        printf("Point %3ld contributes %.5f to cluster %ld  ", p, weightContributionOfP, clusterOfPointP);
 
         // Sum it up: sum_{p sampled and p in C_i}   cost(A)/(T*cost(p,A))
         centerWeights[clusterOfPointP] += weightContributionOfP;
 
-        std::cout << "  w_" << clusterOfPointP << " = " << centerWeights[clusterOfPointP] << "\n";
+        //std::cout << "  w_" << clusterOfPointP << " = " << centerWeights[clusterOfPointP] << "\n";
+        printf("  =>  w_%ld = %.5f\n", clusterOfPointP, centerWeights[clusterOfPointP]);
     }
+
+    printf("\n\n");
 
     // For each of the k' centers, compute the center weights.
     for (size_t c = 0; c < kPrime; c++)
@@ -93,6 +104,8 @@ SensitivySampling::run(const blaze::DynamicMatrix<double> &data)
 
         // Update the center weight.
         centerWeights[c] = centerWeight;
+
+        printf("|C_%ld| = %3ld,  w_%ld = %2.5f,  new w_%ld = %2.5f \n", c, numberOfPointsInCluster, c, w_i, c, centerWeights[c]);
     }
 
     return std::make_shared<CoresetResult>();
