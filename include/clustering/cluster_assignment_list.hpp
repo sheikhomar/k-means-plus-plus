@@ -23,6 +23,12 @@ namespace clustering
         ClusterAssignmentList(uint numOfPoints, uint numOfClusters);
 
         /**
+        * @brief Copy constructor.
+        * @param other The other cluster assignments to copy from.
+        */
+        ClusterAssignmentList(const ClusterAssignmentList &other);
+
+        /**
          * @brief Assign all data points to their closest centers.
          */
         void
@@ -59,7 +65,7 @@ namespace clustering
         /**
          * @brief Returns the distance of each point to its assigned cluster's centroid.
          */
-        blaze::DynamicVector<double>&
+        blaze::DynamicVector<double> &
         getCentroidDistances();
 
         /**

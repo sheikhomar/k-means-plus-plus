@@ -6,6 +6,11 @@ ClusterAssignmentList::ClusterAssignmentList(uint n, uint k) : numOfPoints(n), n
 {
 }
 
+ClusterAssignmentList::ClusterAssignmentList(const ClusterAssignmentList& other) : 
+    numOfPoints(other.numOfPoints), numOfClusters(other.numOfClusters), clusters(other.clusters), distances(other.distances)
+{
+}
+
 void ClusterAssignmentList::assign(size_t pointIndex, size_t clusterIndex, double distance)
 {
     // TODO: Ensure arguments are not out of range to avoid runtime errors.
