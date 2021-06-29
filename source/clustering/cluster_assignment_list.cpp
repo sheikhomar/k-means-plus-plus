@@ -83,3 +83,9 @@ ClusterAssignmentList::countPointsInCluster(size_t clusterIndex)
     
     return count;
 }
+
+double
+ClusterAssignmentList::calcCost()
+{
+    return blaze::sum(this->distances);
+}

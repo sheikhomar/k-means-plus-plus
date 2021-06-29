@@ -68,6 +68,14 @@ namespace clustering
         size_t
         countPointsInCluster(size_t clusterIndex);
 
+        /**
+         * @brief Returns the cost of the cluster assignments. 
+         * 
+         * The cost is the sum of pairwise distances between each point and its closest center.
+         */
+        double
+        calcCost();
+
     private:
         /**
          * The total number of points in the dataset.
