@@ -23,6 +23,12 @@ namespace clustering
         ClusterAssignmentList(uint numOfPoints, uint numOfClusters);
 
         /**
+         * @brief Assign all data points to their closest centers.
+         */
+        void
+        assignAll(const blaze::DynamicMatrix<double> &dataPoints, const blaze::DynamicMatrix<double> &centers);
+
+        /**
          * @brief Assign a point to a cluster.
          * @param pointIndex The index of the point to assign the cluster to.
          * @param clusterIndex The index of the cluster to assign the point to.

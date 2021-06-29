@@ -13,6 +13,37 @@ void ClusterAssignmentList::assign(size_t pointIndex, size_t clusterIndex, doubl
     distances[pointIndex] = distance;
 }
 
+void
+ClusterAssignmentList::assignAll(const blaze::DynamicMatrix<double> &dataPoints, const blaze::DynamicMatrix<double> &centers)
+{
+    auto n = this->numOfPoints;
+    auto k = this->numOfClusters;
+
+    // For each data point, assign the centroid that is closest to it.
+    for (size_t p = 0; p < n; p++)
+    {
+      double bestDistance = std::numeric_limits<double>::max();
+      size_t bestCluster = 0;
+
+      // Loop through all the clusters.
+      for (size_t c = 0; c < k; c++)
+      {
+        // Compute the L2 norm between point p and centroid c.
+        const double distance = blaze::norm(blaze::row(dataPoints, p) - blaze::row(centers, c));
+
+        // Decide if current distance is better.
+        if (distance < bestDistance)
+        {
+          bestDistance = distance;
+          bestCluster = c;
+        }
+      }
+
+      // Assign cluster to the point p.
+      this->assign(p, bestCluster, bestDistance);
+    }
+}
+
 size_t
 ClusterAssignmentList::getCluster(size_t pointIndex)
 {
