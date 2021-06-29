@@ -35,13 +35,6 @@ namespace clustering
         initCentroidsNaive(const blaze::DynamicMatrix<double> &dataMatrix);
 
         /**
-         * @brief Creates centroids according to the k-Means++ initialisation.
-         * @param dataMatrix A NxD data matrix containing N data points where each point has D dimensions.
-         */
-        blaze::DynamicMatrix<double>
-        initCentroidsKMeansPlusPlus(const blaze::DynamicMatrix<double> &dataMatrix);
-
-        /**
          * @brief Run Lloyd's algorithm to perform the clustering of data points.
          * @param dataMatrix A NxD data matrix containing N data points where each point has D dimensions.
          * @param dataMatrix Initial k centroids where k is the number of required clusters.
@@ -66,6 +59,13 @@ namespace clustering
          */
         std::shared_ptr<ClusteringResult>
         run(const blaze::DynamicMatrix<double> &data);
+
+        /**
+         * @brief Creates centroids according to the k-Means++ initialisation.
+         * @param dataMatrix A NxD data matrix containing N data points where each point has D dimensions.
+         */
+        blaze::DynamicMatrix<double>
+        initCentroidsKMeansPlusPlus(const blaze::DynamicMatrix<double> &dataMatrix);
     };
 
 }
