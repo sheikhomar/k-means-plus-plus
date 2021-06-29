@@ -7,13 +7,13 @@ ClusteringResult::ClusteringResult(const ClusterAssignmentList &assignments, bla
 {
 }
 
-const ClusterAssignmentList&
+ClusterAssignmentList&
 ClusteringResult::getClusterAssignments()
 {
     return this->clusterAssignments;
 }
 
-const blaze::DynamicMatrix<double>&
+blaze::DynamicMatrix<double>&
 ClusteringResult::getCentroids()
 {
     return this->centroids;

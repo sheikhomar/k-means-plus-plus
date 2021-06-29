@@ -25,9 +25,10 @@ namespace clustering
          */
         ClusteringResult(const ClusterAssignmentList &clusterAssignments, blaze::DynamicMatrix<double> &centroids);
 
-        const ClusterAssignmentList &getClusterAssignments();
+        ClusterAssignmentList &getClusterAssignments();
 
-        const blaze::DynamicMatrix<double> &getCentroids();
+        blaze::DynamicMatrix<double> &getCentroids();
+
     private:
         ClusterAssignmentList clusterAssignments;
         blaze::DynamicMatrix<double> centroids;
