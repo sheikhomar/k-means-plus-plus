@@ -37,3 +37,18 @@ ClusterAssignmentList::getCentroidDistances()
 {
     return this->distances;
 }
+
+size_t
+ClusterAssignmentList::countPointsInCluster(size_t clusterIndex)
+{
+    size_t count = 0;
+    for (size_t p = 0; p < this->numOfPoints; p++)
+    {
+        if (clusters[p] == clusterIndex)
+        {
+            count++;
+        }
+    }
+    
+    return count;
+}

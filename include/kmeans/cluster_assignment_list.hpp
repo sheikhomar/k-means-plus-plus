@@ -56,6 +56,12 @@ namespace kmeans
         blaze::DynamicVector<double>&
         getCentroidDistances();
 
+        /**
+         * @brief Returns the number of points in a cluster.
+         */
+        size_t
+        countPointsInCluster(size_t clusterIndex);
+
     private:
         /**
          * The total number of points in the dataset.
