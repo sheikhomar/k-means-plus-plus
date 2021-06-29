@@ -25,7 +25,6 @@ SensitivySampling::run(const blaze::DynamicMatrix<double> &data)
     auto A = result->getCentroids();
 
     auto clusterAssignments = result->getClusterAssignments();
-    auto numOfPoints = clusterAssignments.getNumberOfPoints();
 
     // Step 2a: compute cost(p, A). The cost of each point is the
     // distance between the point and its closest centroid.
@@ -100,7 +99,7 @@ SensitivySampling::run(const blaze::DynamicMatrix<double> &data)
         size_t numberOfPointsInCluster = clusterAssignments.countPointsInCluster(c);
 
         // Compute max(0, |C_i| - w_i)
-        double centerWeight = blaze::max(0, numberOfPointsInCluster - w_i);
+        double centerWeight = blaze::max(0.0, static_cast<double>(numberOfPointsInCluster) - w_i);
 
         // Update the center weight.
         centerWeights[c] = centerWeight;

@@ -20,7 +20,7 @@ namespace clustering
         * @param numOfPoints The total number of points in the dataset.
         * @param numOfClusters The number of clusters that are generated.
         */
-        ClusterAssignmentList(uint numOfPoints, uint numOfClusters);
+        ClusterAssignmentList(size_t numOfPoints, size_t numOfClusters);
 
         /**
         * @brief Copy constructor.
@@ -60,13 +60,13 @@ namespace clustering
         /**
          * @brief Returns the total number of points in the dataset.
          */
-        uint
+        size_t
         getNumberOfPoints();
 
         /**
          * @brief Returns the number of clusters that are generated.
          */
-        uint
+        size_t
         getNumberOfClusters();
 
         /**
@@ -93,12 +93,12 @@ namespace clustering
         /**
          * The total number of points in the dataset.
          */
-        uint numOfPoints;
+        size_t numOfPoints;
 
         /**
          * The number of clusters that are generated.
          */
-        uint numOfClusters;
+        size_t numOfClusters;
 
         /**
          * A vector of size N contain the cluster index for each point.

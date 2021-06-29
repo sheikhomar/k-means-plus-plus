@@ -2,7 +2,7 @@
 
 using namespace clustering;
 
-ClusterAssignmentList::ClusterAssignmentList(uint n, uint k) : numOfPoints(n), numOfClusters(k), clusters(n), distances(n)
+ClusterAssignmentList::ClusterAssignmentList(size_t n, size_t k) : numOfPoints(n), numOfClusters(k), clusters(n), distances(n)
 {
 }
 
@@ -56,13 +56,13 @@ ClusterAssignmentList::getCluster(size_t pointIndex)
     return clusters[pointIndex];
 }
 
-uint
+size_t
 ClusterAssignmentList::getNumberOfPoints()
 {
     return this->numOfPoints;
 }
 
-uint
+size_t
 ClusterAssignmentList::getNumberOfClusters()
 {
     return this->numOfClusters;

@@ -118,11 +118,6 @@ KMeans::runLloydsAlgorithm(const blaze::DynamicMatrix<double> &matrix, blaze::Dy
   size_t n = matrix.rows();
   auto k = this->numOfClusters;
 
-  // Initialise the sequence of pseudo-random numbers with a fixed random seed.
-  static std::random_device seed;
-  static std::mt19937 randomEngine(42);
-  std::uniform_int_distribution<int> randomGen(0, n - 1);
-
   blaze::DynamicVector<size_t> clusterMemberCounts(k);
   ClusterAssignmentList cal(n, this->numOfClusters);
   
