@@ -2,7 +2,7 @@
 
 using namespace utils;
 
-RandomIndexer::RandomIndexer(std::mt19937 re, size_t s) : randomEngine(re), sampler(0, s)
+RandomIndexer::RandomIndexer(std::mt19937 re, size_t s) : randomEngine(re), sampler(0, s-1)
 {
 }
 
@@ -91,4 +91,14 @@ Random::choice(const size_t k, const size_t n, blaze::DynamicVector<size_t> weig
     }
 
     return result;
+}
+
+size_t
+Random::choice(blaze::DynamicVector<size_t> weights)
+{
+    auto n = weights.size();
+
+    std::discrete_distribution<size_t> weightedChoice(weights.begin(), weights.end());
+    size_t pickedIndex = weightedChoice(this->randomEngine);
+    return pickedIndex;
 }

@@ -47,6 +47,12 @@ namespace utils
         std::shared_ptr<blaze::DynamicVector<size_t>>
         choice(const size_t k, const size_t n, blaze::DynamicVector<size_t> weights);
 
+        /**
+         * @brief Randomly select an index using the given weights.
+         */
+        size_t
+        choice(blaze::DynamicVector<size_t> weights);
+
     private:
         std::mt19937 randomEngine;
         std::uniform_real_distribution<> pickRandomValue;
