@@ -1,13 +1,13 @@
-#include <kmeans/clustering_result.hpp>
+#include <clustering/clustering_result.hpp>
 
-using namespace kmeans;
+using namespace clustering;
 
-ClusteringResult::ClusteringResult(const kmeans::ClusterAssignmentList &assignments, blaze::DynamicMatrix<double> &finalCentroids) :
+ClusteringResult::ClusteringResult(const ClusterAssignmentList &assignments, blaze::DynamicMatrix<double> &finalCentroids) :
     clusterAssignments(assignments), centroids(finalCentroids)
 {
 }
 
-const kmeans::ClusterAssignmentList&
+const ClusterAssignmentList&
 ClusteringResult::getClusterAssignments()
 {
     return this->clusterAssignments;

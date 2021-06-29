@@ -7,7 +7,7 @@
 #include <boost/array.hpp>
 #include <boost/range/algorithm_ext/erase.hpp>
 
-namespace kmeans
+namespace clustering
 {
     /**
      * @brief Represents a collection of points-to-cluster assignments.
@@ -85,4 +85,4 @@ namespace kmeans
         blaze::DynamicVector<double> distances;
     };
 
-} // namespace kmeans
+}

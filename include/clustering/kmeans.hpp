@@ -9,10 +9,10 @@
 #include <boost/array.hpp>
 #include <boost/range/algorithm_ext/erase.hpp>
 
-#include <kmeans/cluster_assignment_list.hpp>
-#include <kmeans/clustering_result.hpp>
+#include <clustering/cluster_assignment_list.hpp>
+#include <clustering/clustering_result.hpp>
 
-namespace kmeans
+namespace clustering
 {
     /**
      * @brief Implementation of the k-Means clustering algorithm.
@@ -67,4 +67,4 @@ namespace kmeans
         run(const blaze::DynamicMatrix<double> &data);
     };
 
-} // namespace kmeans
+}

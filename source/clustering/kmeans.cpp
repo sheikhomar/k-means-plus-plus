@@ -1,6 +1,6 @@
-#include <kmeans/kmeans.hpp>
+#include <clustering/kmeans.hpp>
 
-using namespace kmeans;
+using namespace clustering;
 
 KMeans::KMeans(uint k, bool kpp, uint miter, double convDiff, int randSeed) : numOfClusters(k), initKMeansPlusPlus(kpp), maxIterations(miter), convergenceDiff(convDiff), randomSeed(randSeed)
 {
@@ -132,7 +132,7 @@ KMeans::runLloydsAlgorithm(const blaze::DynamicMatrix<double> &matrix, blaze::Dy
   std::uniform_int_distribution<int> randomGen(0, n - 1);
 
   blaze::DynamicVector<size_t> clusterMemberCounts(k);
-  kmeans::ClusterAssignmentList cal(n, this->numOfClusters);
+  ClusterAssignmentList cal(n, this->numOfClusters);
   
   for (size_t i = 0; i < this->maxIterations; i++)
   {

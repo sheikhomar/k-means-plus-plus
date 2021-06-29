@@ -20,7 +20,7 @@ SensitivySampling::run(const blaze::DynamicMatrix<double> &data)
     size_t n = data.rows();
 
     // Step 1: Run k-means++ to get the initial solution A.
-    kmeans::KMeans kMeansAlg(kPrime, true, 100U, 0.0001, 42);
+    clustering::KMeans kMeansAlg(kPrime, true, 100U, 0.0001, 42);
     auto result = kMeansAlg.run(data);
     auto A = result->getCentroids();
 

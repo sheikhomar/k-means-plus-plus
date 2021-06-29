@@ -4,7 +4,7 @@
 #include <vector>
 #include <iostream>
 
-#include <kmeans/kmeans.hpp>
+#include <clustering/kmeans.hpp>
 #include <utils/random.hpp>
 
 namespace coresets

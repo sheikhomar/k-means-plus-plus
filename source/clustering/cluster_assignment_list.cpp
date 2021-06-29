@@ -1,6 +1,6 @@
-#include <kmeans/cluster_assignment_list.hpp>
+#include <clustering/cluster_assignment_list.hpp>
 
-using namespace kmeans;
+using namespace clustering;
 
 ClusterAssignmentList::ClusterAssignmentList(uint n, uint k) : numOfPoints(n), numOfClusters(k), clusters(n), distances(n)
 {

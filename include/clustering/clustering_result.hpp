@@ -8,9 +8,9 @@
 #include <boost/array.hpp>
 #include <boost/range/algorithm_ext/erase.hpp>
 
-#include <kmeans/cluster_assignment_list.hpp>
+#include <clustering/cluster_assignment_list.hpp>
 
-namespace kmeans
+namespace clustering
 {
     /**
      * @brief Represents the output of a clustering algorithm.
@@ -23,13 +23,13 @@ namespace kmeans
          * @param clusterAssignments Cluster assignments.
          * @param centroids The final centroids.
          */
-        ClusteringResult(const kmeans::ClusterAssignmentList &clusterAssignments, blaze::DynamicMatrix<double> &centroids);
+        ClusteringResult(const ClusterAssignmentList &clusterAssignments, blaze::DynamicMatrix<double> &centroids);
 
-        const kmeans::ClusterAssignmentList &getClusterAssignments();
+        const ClusterAssignmentList &getClusterAssignments();
 
         const blaze::DynamicMatrix<double> &getCentroids();
     private:
-        kmeans::ClusterAssignmentList clusterAssignments;
+        ClusterAssignmentList clusterAssignments;
         blaze::DynamicMatrix<double> centroids;
     };
-} // namespace kmeans
+}

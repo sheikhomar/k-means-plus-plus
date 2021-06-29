@@ -1,9 +1,9 @@
 // #include <cxxopts.hpp>
-#include <kmeans/kmeans.hpp>
+#include <clustering/kmeans.hpp>
 #include <coresets/sensitivity_sampling.hpp>
 
 using namespace std;
-using namespace kmeans;
+using namespace clustering;
 
 int main() {
     blaze::DynamicMatrix<double> data {
