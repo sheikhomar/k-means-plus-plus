@@ -25,6 +25,8 @@ LocalSearch::run(const blaze::DynamicMatrix<double> &data)
     double bestCost = clusterAssignments.calcCost();
     auto bestCenters = centers;
 
+    auto swapClusterAssignments = clusterAssignments;
+
     printf("Cost before swaps %0.5f\n", bestCost);
 
     std::cout << "Best centers: \n" << bestCenters << "\n";
@@ -37,10 +39,10 @@ LocalSearch::run(const blaze::DynamicMatrix<double> &data)
             blaze::row(centers, c) = blaze::row(data, p);
 
             // Reassign points to potentially new centers after the swap.
-            clusterAssignments.assignAll(data, centers);
+            swapClusterAssignments.assignAll(data, centers);
 
             // The cost after the swap.
-            double cost = clusterAssignments.calcCost();
+            double cost = swapClusterAssignments.calcCost();
 
             printf("Swaping cluster %3ld with point %3ld result in cost %0.5f\n", c, p, cost);
 
