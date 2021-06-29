@@ -24,8 +24,8 @@ LocalSearch::run(const blaze::DynamicMatrix<double> &data)
     // Find the cost of the clustering done by k-Means.
     double bestCost = clusterAssignments.calcCost();
     auto bestCenters = centers;
-
     auto swapClusterAssignments = clusterAssignments;
+    auto bestClusterAssignments = swapClusterAssignments;
 
     printf("Cost before swaps %0.5f\n", bestCost);
 
@@ -50,10 +50,11 @@ LocalSearch::run(const blaze::DynamicMatrix<double> &data)
             {
                 bestCost = cost;
                 bestCenters = centers;
+                bestClusterAssignments = swapClusterAssignments;
                 std::cout << "Found new best centers: \n" << bestCenters << "\n";
             }
         }
     }
     
-    return result;
+    return std::make_shared<ClusteringResult>(bestClusterAssignments, bestCenters);
 }
