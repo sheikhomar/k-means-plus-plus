@@ -1,6 +1,5 @@
 // #include <cxxopts.hpp>
 #include <kmeans/kmeans.hpp>
-#include <coresets/cora.hpp>
 #include <coresets/sensitivity_sampling.hpp>
 
 using namespace std;
