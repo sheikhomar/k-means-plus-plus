@@ -29,6 +29,13 @@ namespace clustering
         ClusterAssignmentList(const ClusterAssignmentList &other);
 
         /**
+         * @brief Copies cluster assignments from another object.
+         * @param other The other cluster assignments to copy from.
+         */
+        ClusterAssignmentList&
+        operator=(const ClusterAssignmentList &other);
+
+        /**
          * @brief Assign all data points to their closest centers.
          */
         void

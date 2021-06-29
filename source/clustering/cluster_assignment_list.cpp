@@ -94,3 +94,13 @@ ClusterAssignmentList::calcCost()
 {
     return blaze::sum(this->distances);
 }
+
+ClusterAssignmentList&
+ClusterAssignmentList::operator=(const ClusterAssignmentList &other)
+{
+    this->numOfPoints = other.numOfPoints;
+    this->numOfClusters = other.numOfClusters;
+    this->clusters = other.clusters;
+    this->distances = other.distances;
+    return *this;
+}
