@@ -1,5 +1,6 @@
 // #include <cxxopts.hpp>
 #include <clustering/kmeans.hpp>
+#include <clustering/local_search.hpp>
 #include <coresets/sensitivity_sampling.hpp>
 
 using namespace std;
@@ -113,6 +114,9 @@ int main() {
   // auto result = kMeansAlg.run(data);
   // std::cout << "Cluster labels: \n" << result->getCentroids() <<  "\n" ;
 
-  coresets::SensitivySampling sensitivitySampling;
-  sensitivitySampling.run(data);
+  // coresets::SensitivySampling sensitivitySampling;
+  // sensitivitySampling.run(data);
+
+  LocalSearch ls(3, 2);
+  ls.run(data);
 }
