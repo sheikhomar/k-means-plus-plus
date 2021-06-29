@@ -118,5 +118,11 @@ int main() {
   // sensitivitySampling.run(data);
 
   LocalSearch ls(3, 2);
-  ls.run(data);
+  //auto result = ls.run(data);
+
+  auto result = ls.runPlusPlus(data, 10, 100);
+  auto cost = (result->getClusterAssignments()).calcCost();
+  printf("Final cost: %0.5f\n", cost);
+
+  std::cout << "Final centers: \n" << result->getCentroids();
 }
