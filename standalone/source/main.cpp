@@ -1,6 +1,7 @@
 // #include <cxxopts.hpp>
 #include <kmeans/kmeans.hpp>
 #include <coresets/cora.hpp>
+#include <coresets/sensitivity_sampling.hpp>
 
 using namespace std;
 using namespace kmeans;
@@ -113,6 +114,6 @@ int main() {
   // auto result = kMeansAlg.run(data);
   // std::cout << "Cluster labels: \n" << result->getCentroids() <<  "\n" ;
 
-  coresets::Cora cora;
-  cora.run(data);
+  coresets::SensitivySampling sensitivitySampling;
+  sensitivitySampling.run(data);
 }
