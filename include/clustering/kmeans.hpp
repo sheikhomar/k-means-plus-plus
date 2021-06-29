@@ -11,6 +11,7 @@
 
 #include <clustering/cluster_assignment_list.hpp>
 #include <clustering/clustering_result.hpp>
+#include <utils/random.hpp>
 
 namespace clustering
 {
@@ -24,7 +25,7 @@ namespace clustering
         bool initKMeansPlusPlus;
         uint maxIterations;
         double convergenceDiff;
-        int randomSeed;
+        utils::Random random;
 
         /**
          * @brief Creates centroids by picking points in the data matrix uniformly at random.

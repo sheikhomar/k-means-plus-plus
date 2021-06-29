@@ -2,7 +2,7 @@
 
 using namespace clustering;
 
-KMeans::KMeans(uint k, bool kpp, uint miter, double convDiff, int randSeed) : numOfClusters(k), initKMeansPlusPlus(kpp), maxIterations(miter), convergenceDiff(convDiff), randomSeed(randSeed)
+KMeans::KMeans(uint k, bool kpp, uint miter, double convDiff, int randSeed) : numOfClusters(k), initKMeansPlusPlus(kpp), maxIterations(miter), convergenceDiff(convDiff), random(randSeed)
 {
 }
 
@@ -14,26 +14,23 @@ KMeans::run(const blaze::DynamicMatrix<double> &data)
 }
 
 blaze::DynamicMatrix<double>
-KMeans::initCentroidsNaive(const blaze::DynamicMatrix<double> &matrix)
+KMeans::initCentroidsNaive(const blaze::DynamicMatrix<double> &dataPoints)
 {
-  size_t n = matrix.rows();
-  size_t d = matrix.columns();
+  auto n = dataPoints.rows();
+  auto d = dataPoints.columns();
   auto k = this->numOfClusters;
+  auto randomPointGenerator = random.getIndexer(n);
 
-  // Initialise the sequence of pseudo-random numbers with a fixed random seed.
-  static std::random_device seed;
-  static std::mt19937 randomEngine(this->randomSeed);
-  std::uniform_int_distribution<size_t> randomGen(0, n - 1);
+  blaze::DynamicMatrix<double> centers(k, d);
 
-  blaze::DynamicMatrix<double> centroids(k, d);
-
-  for (size_t i = 0; i < k; i++)
+  for (size_t c = 0; c < k; c++)
   {
-    size_t centroidIndex = randomGen(randomEngine);
-    blaze::row(centroids, i) = blaze::row(matrix, centroidIndex);
+    // Pick a random point p as the cluster center.
+    auto randomPoint = randomPointGenerator.next();
+    blaze::row(centers, c) = blaze::row(dataPoints, randomPoint);
   }
 
-  return centroids;
+  return centers;
 }
 
 blaze::DynamicMatrix<double>
@@ -42,11 +39,7 @@ KMeans::initCentroidsKMeansPlusPlus(const blaze::DynamicMatrix<double> &matrix)
   size_t n = matrix.rows();
   size_t d = matrix.columns();
   auto k = this->numOfClusters;
-
-  // Initialise the sequence of pseudo-random numbers with a fixed random seed.
-  static std::random_device seed;
-  static std::mt19937 randomEngine(this->randomSeed);
-  std::uniform_int_distribution<int> randomGen(0, n - 1);
+  auto randomPointGenerator = random.getIndexer(n);
 
   blaze::DynamicMatrix<double> centroids(k, d);
   std::vector<uint> availableIndices(n);
@@ -56,12 +49,12 @@ KMeans::initCentroidsKMeansPlusPlus(const blaze::DynamicMatrix<double> &matrix)
 
   for (size_t c = 0; c < k; c++)
   {
-    uint centroidIndex = 0;
+    size_t centroidIndex = 0;
 
     if (c == 0)
     {
       // Pick the first centroid uniformly at random.
-      centroidIndex = randomGen(randomEngine);
+      centroidIndex = randomPointGenerator.next();
     }
     else
     {
@@ -100,8 +93,7 @@ KMeans::initCentroidsKMeansPlusPlus(const blaze::DynamicMatrix<double> &matrix)
       smallestDistances /= blaze::sum(smallestDistances);
 
       // Pick the index of a point randomly selected based on the weights.
-      std::discrete_distribution<uint> weightedChoice(smallestDistances.begin(), smallestDistances.end());
-      uint nextClusterCandidate = weightedChoice(randomEngine);
+      size_t nextClusterCandidate = random.choice(smallestDistances);
 
       // Assign centroid index.
       centroidIndex = availableIndices[nextClusterCandidate];
