@@ -12,6 +12,7 @@
 #include <clustering/cluster_assignment_list.hpp>
 #include <clustering/clustering_result.hpp>
 #include <clustering/kmeans.hpp>
+#include <utils/random.hpp>
 
 namespace clustering
 {
@@ -29,6 +30,13 @@ namespace clustering
          */
         std::shared_ptr<ClusteringResult>
         run(const blaze::DynamicMatrix<double> &data);
+
+        /**
+         * @brief Runs the faster version of the algorithm.
+         * @param data A NxD data matrix containing N data points where each point has D dimensions.
+         */
+        std::shared_ptr<ClusteringResult>
+        runPlusPlus(const blaze::DynamicMatrix<double> &data, size_t nSamples, size_t nIterations);
     
     private:
         uint numOfClusters;
