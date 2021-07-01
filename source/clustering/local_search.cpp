@@ -2,6 +2,36 @@
 
 using namespace clustering;
 
+class CandidateCentersGenerator
+{
+private:
+    std::vector<size_t> points;
+    size_t numOfCenters;
+
+public:
+    CandidateCentersGenerator(size_t numOfSamples, size_t numOfCenters) : points(numOfSamples), numOfCenters(numOfCenters)
+    {
+        init();
+    }
+
+    void init()
+    {
+        std::iota(points.begin(), points.end(), 0);
+    }
+
+    bool next(std::vector<size_t> &candidates)
+    {
+        assert(candidates.size() == numOfCenters);
+
+        for (size_t i = 0; i < numOfCenters; i++)
+        {
+            candidates[i] = points[i];
+        }
+        std::reverse(points.begin() + numOfCenters, points.end());
+        return std::next_permutation(points.begin(), points.end());
+    }
+};
+
 LocalSearch::LocalSearch(uint k, uint s) : numOfClusters(k), swapSize(s)
 {
 }
