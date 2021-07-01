@@ -118,6 +118,7 @@ LocalSearch::runPlusPlus(const blaze::DynamicMatrix<double> &data, size_t nSampl
 
     blaze::DynamicVector<size_t> bestPointsUsedAsCenters(k);
     blaze::DynamicVector<size_t> pointsUsedAsCenters(k);
+    size_t swapCount = 0;
 
 resetIteration:
     for (size_t iteration = 0; iteration < nIterations; iteration++)
@@ -136,6 +137,8 @@ resetIteration:
                 // Swap one center (c) with a point (p)
                 blaze::row(centers, c) = blaze::row(data, p);
 
+                swapCount++;
+
                 pointsUsedAsCenters[c] = p;
 
                 // Reassign points to potentially new centers after the swap.
@@ -144,7 +147,7 @@ resetIteration:
                 // The cost after the swap.
                 double cost = clusterAssignments.calcCost();
 
-                printf("Swaping cluster %3ld with point %3ld costs %0.5f\n", c, p, cost);
+                // printf("Swaping cluster %3ld with point %3ld costs %0.5f\n", c, p, cost);
 
                 if (cost < bestCost)
                 {
@@ -153,8 +156,8 @@ resetIteration:
                     bestCost = cost;
                     bestCenters = centers;
                     bestClusterAssignments = clusterAssignments;
-                    // printf("Best cost: %0.5f - ", bestCost);
-                    // std::cout << "Found new best centers: \n" << bestCenters << "\n";
+                    printf("Found new best cost: %0.5f - number of swaps performed %ld  - ", bestCost, swapCount);
+                    std::cout << "New best centers: \n" << bestCenters << "\n";
                     goto resetIteration;
                 }
             }
