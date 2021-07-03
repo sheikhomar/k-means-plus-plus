@@ -2,6 +2,7 @@
 #include <clustering/kmeans.hpp>
 #include <clustering/local_search.hpp>
 #include <coresets/sensitivity_sampling.hpp>
+#include <coresets/group_sampling.hpp>
 
 using namespace std;
 using namespace clustering;
@@ -108,6 +109,8 @@ int main() {
     { -1.3739725806942609F, 5.291631033113889F, },
     { -6.2539305108541825F, -7.108786009916786F, },
     { 0.08525185826796045F, 3.6452829679480585F, },
+    { 1.0F, -10.0F, }, 
+    { 6.0F, -16.0F, }, // Outlier point.
   };
 
   // kmeans::KMeans kMeansAlg(3, true, 100U, 0.0001, 42);
@@ -117,12 +120,16 @@ int main() {
   // coresets::SensitivySampling sensitivitySampling;
   // sensitivitySampling.run(data);
 
-  LocalSearch ls(3, 2);
+  //LocalSearch ls(3, 2);
   //auto result = ls.run(data);
 
-  auto result = ls.runPlusPlus(data, 10, 100);
-  auto cost = (result->getClusterAssignments()).calcCost();
-  printf("Final cost: %0.5f\n", cost);
+  // auto result = ls.runPlusPlus(data, 10, 100);
+  // auto cost = (result->getClusterAssignments()).calcCost();
+  // printf("Final cost: %0.5f\n", cost);
 
-  std::cout << "Final centers: \n" << result->getCentroids();
+  // std::cout << "Final centers: \n" << result->getCentroids();
+
+  coresets::GroupSampling gs;
+  gs.run(data);
+  
 }

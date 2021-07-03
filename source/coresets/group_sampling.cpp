@@ -10,13 +10,13 @@ void
 GroupSampling::run(const blaze::DynamicMatrix<double> &data)
 {
     utils::Random random(42);
-    uint kPrime = 3;
-    uint k = kPrime; // TODO: Should be k = 2 * kPrime;
-    uint T = 20;         // T is the number of sampled points. It is hyperparam. Usually T=200*k
-    size_t n = data.rows();
-    size_t beta = 100;
-    int ringRangeStart = -std::log10(static_cast<double>(beta));
-    int ringRangeEnd = -ringRangeStart;
+    const uint kPrime = 3;
+    const uint k = kPrime; // TODO: Should be k = 2 * kPrime;
+    const uint T = 20;         // T is the number of sampled points. It is hyperparam. Usually T=200*k
+    const size_t n = data.rows();
+    const size_t beta = 100;
+    const int ringRangeStart = -std::log10(static_cast<double>(beta));
+    const int ringRangeEnd = -ringRangeStart;
 
     // Step 1: Run k-means++ to get the initial solution A.
     clustering::KMeans kMeansAlg(k, true, 100U, 0.0001, 42);
@@ -56,7 +56,7 @@ GroupSampling::run(const blaze::DynamicMatrix<double> &data)
             // If cost(p, A) is between Δ_c*2^l and Δ_c*2^(l+1) ...
             if (costOfPoint >= ringLowerBound && costOfPoint < ringUpperBound) 
             {
-                printf("Point %3ld with cost(p, A) = %0.4f  ->  R[%2d, %ld]  \n", p, costOfPoint, l, c);
+                printf("Point %3ld with cost(p, A) = %0.4f  ->  R[%2d, %ld]  [%0.4f, %0.4f) \n", p, costOfPoint, l, c, ringLowerBound, ringUpperBound);
                 pointPutInRing = true;
                 break; // A point cannot belong to multiple rings.
             }
@@ -65,7 +65,7 @@ GroupSampling::run(const blaze::DynamicMatrix<double> &data)
         if (pointPutInRing == false)
         {
             //printf("Point %3ld (cost=%0.5f) did not get be put in a ring: ", p, costOfPoint);
-            printf("Point %3ld with cost(p, A) = %0.4f  -> no ring because ", p, costOfPoint);
+            printf("Point %3ld with cost(p, A) = %0.4f cluster(p)=%ld  -> no ring because ", p, costOfPoint, c);
 
             double innerMostRingCost = averageClusterCost * std::pow(2, ringRangeStart);
             double outerMostRingCost = averageClusterCost * std::pow(2, ringRangeEnd+1);
@@ -84,7 +84,7 @@ GroupSampling::run(const blaze::DynamicMatrix<double> &data)
             } 
             else
             {
-                printf(" something went wrong!"); // TODO: Raise exception.
+                printf(" something went wrong. Outer cost %0.4f!", outerMostRingCost); // TODO: Raise exception.
             }
 
             printf("\n");
