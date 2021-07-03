@@ -3,6 +3,7 @@ set(headers
     include/clustering/clustering_result.hpp
     include/clustering/local_search.hpp
     include/clustering/kmeans.hpp
+    include/coresets/group_sampling.hpp
     include/coresets/sensitivity_sampling.hpp
     include/utils/random.hpp
 )
@@ -12,6 +13,7 @@ set(sources
     source/clustering/clustering_result.cpp
     source/clustering/local_search.cpp
     source/clustering/kmeans.cpp
+    source/coresets/group_sampling.cpp
     source/coresets/sensitivity_sampling.cpp
     source/utils/random.cpp
 )
