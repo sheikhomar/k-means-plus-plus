@@ -2,21 +2,17 @@
 
 using namespace coresets;
 
-GroupSampling::GroupSampling()
+GroupSampling::GroupSampling() : beta(200)
 {
 }
 
-void
-GroupSampling::run(const blaze::DynamicMatrix<double> &data)
+void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
 {
     utils::Random random(42);
     const uint kPrime = 3;
     const uint k = kPrime; // TODO: Should be k = 2 * kPrime;
-    const uint T = 20;         // T is the number of sampled points. It is hyperparam. Usually T=200*k
+    const uint T = 20;     // T is the number of sampled points. It is hyperparam. Usually T=200*k
     const size_t n = data.rows();
-    const size_t beta = 100;
-    const int ringRangeStart = -std::log10(static_cast<double>(beta));
-    const int ringRangeEnd = -ringRangeStart;
 
     // Step 1: Run k-means++ to get the initial solution A.
     clustering::KMeans kMeansAlg(k, true, 100U, 0.0001, 42);
@@ -32,6 +28,22 @@ GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     {
         printf("Cluster %ld's average cost is %.4f\n", c, (*averageClusterCosts)[c]);
     }
+
+    auto rings = this->makeRings(result);
+}
+
+std::shared_ptr<RingSet>
+GroupSampling::makeRings(const std::shared_ptr<clustering::ClusteringResult> clusters)
+{
+    auto clusterAssignments = clusters->getClusterAssignments();
+    const int ringRangeStart = -std::log10(static_cast<double>(beta));
+    const int ringRangeEnd = -ringRangeStart;
+    auto rings = std::make_shared<RingSet>(ringRangeStart, ringRangeEnd);
+    const auto n = clusterAssignments.getNumberOfPoints();
+    const auto k = clusterAssignments.getNumberOfClusters();
+
+    // Step 2: Compute the average cost for each cluster.
+    auto averageClusterCosts = clusterAssignments.calcAverageClusterCosts();
 
     for (size_t p = 0; p < n; p++)
     {
@@ -51,43 +63,44 @@ GroupSampling::run(const blaze::DynamicMatrix<double> &data)
             double ringLowerBound = averageClusterCost * std::pow(2, l);
 
             // Ring upper bound := Δ_c * 2^(l+1)
-            double ringUpperBound = averageClusterCost * std::pow(2, l+1);
+            double ringUpperBound = averageClusterCost * std::pow(2, l + 1);
 
             // If cost(p, A) is between Δ_c*2^l and Δ_c*2^(l+1) ...
-            if (costOfPoint >= ringLowerBound && costOfPoint < ringUpperBound) 
+            if (costOfPoint >= ringLowerBound && costOfPoint < ringUpperBound)
             {
-                printf("Point %3ld with cost(p, A) = %0.4f  ->  R[%2d, %ld]  [%0.4f, %0.4f) \n", p, costOfPoint, l, c, ringLowerBound, ringUpperBound);
                 pointPutInRing = true;
-                break; // A point cannot belong to multiple rings.
+                auto ring = std::make_shared<InternalRing>(p, c, costOfPoint, l, ringLowerBound, ringUpperBound);
+                rings->add(ring);
+
+                // Since a point cannot belong to multiple rings, there is no need to look
+                // test whether the point `p` falls within the ring of the next range l+1.
+                break;
             }
         }
 
         if (pointPutInRing == false)
         {
-            //printf("Point %3ld (cost=%0.5f) did not get be put in a ring: ", p, costOfPoint);
-            printf("Point %3ld with cost(p, A) = %0.4f cluster(p)=%ld  -> no ring because ", p, costOfPoint, c);
-
             double innerMostRingCost = averageClusterCost * std::pow(2, ringRangeStart);
-            double outerMostRingCost = averageClusterCost * std::pow(2, ringRangeEnd+1);
+            double outerMostRingCost = averageClusterCost * std::pow(2, ringRangeEnd + 1);
 
             if (costOfPoint < innerMostRingCost)
             {
                 // Step 5: Handle points below l's lower range i.e. l<log⁡(1/β)
-
-                printf(" the cost(p, A) falls below the cost range of inner most ring (%.4f)", innerMostRingCost);
+                auto ring = std::make_shared<ExternalRing>(p, c, costOfPoint, innerMostRingCost, true);
+                rings->add(ring);
             }
             else if (costOfPoint > outerMostRingCost)
             {
                 // Step 6: Handle points above l's upper range i.e., l>log⁡(β)
-
-                printf(" the cost(p, A) is above the cost range of outer most ring (%.4f)", outerMostRingCost);
-            } 
+                auto ring = std::make_shared<ExternalRing>(p, c, costOfPoint, outerMostRingCost, false);
+                rings->add(ring);
+            }
             else
             {
-                printf(" something went wrong. Outer cost %0.4f!", outerMostRingCost); // TODO: Raise exception.
+                throw std::logic_error("Point does not belong to internal nor external ring. Program logic error.");
             }
-
-            printf("\n");
         }
     }
+
+    return rings;
 }
