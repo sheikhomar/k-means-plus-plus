@@ -120,8 +120,6 @@ ClusterAssignmentList::calcAverageClusterCosts()
     for (size_t c = 0; c < this->numOfClusters; c++)
     {
         (*results)[c] /= static_cast<double>(counts[c]);
-
-        printf("Cluster %ld average cost %.4f\n", c, (*results)[c]);
     }
 
     return results;
