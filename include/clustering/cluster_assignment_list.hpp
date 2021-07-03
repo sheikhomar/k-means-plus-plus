@@ -89,6 +89,12 @@ namespace clustering
         double
         calcCost();
 
+        /**
+         * @brief Returns the average costs of each cluster.
+         */
+        std::shared_ptr<blaze::DynamicVector<double>>
+        calcAverageClusterCosts();
+
     private:
         /**
          * The total number of points in the dataset.

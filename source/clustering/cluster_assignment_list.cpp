@@ -95,6 +95,30 @@ ClusterAssignmentList::calcCost()
     return blaze::sum(this->distances);
 }
 
+std::shared_ptr<blaze::DynamicVector<double>>
+ClusterAssignmentList::calcAverageClusterCosts()
+{
+    auto results = std::make_shared<blaze::DynamicVector<double>>(this->numOfClusters);
+    
+    blaze::DynamicVector<double> counts(this->numOfClusters);
+
+    for (size_t p = 0; p < this->numOfPoints; p++) 
+    {
+        auto c = clusters[p];
+        (*results)[c] += distances[p];
+        counts[c] += 1;
+    }
+
+    for (size_t c = 0; c < this->numOfClusters; c++)
+    {
+        (*results)[c] /= static_cast<double>(counts[c]);
+
+        printf("Cluster %ld average cost %.4f\n", c, (*results)[c]);
+    }
+
+    return results;
+}
+
 ClusterAssignmentList&
 ClusterAssignmentList::operator=(const ClusterAssignmentList &other)
 {
