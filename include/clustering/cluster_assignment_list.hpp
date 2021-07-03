@@ -90,6 +90,14 @@ namespace clustering
         calcCost();
 
         /**
+         * @brief Returns the cost of a point i.e.: cost(p, A).
+         * 
+         * The cost is the distance between a point and its clostest center.
+         */
+        double
+        getPointCost(size_t pointIndex);
+
+        /**
          * @brief Returns the average costs of each cluster.
          */
         std::shared_ptr<blaze::DynamicVector<double>>

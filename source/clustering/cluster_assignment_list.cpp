@@ -95,6 +95,14 @@ ClusterAssignmentList::calcCost()
     return blaze::sum(this->distances);
 }
 
+double
+ClusterAssignmentList::getPointCost(size_t pointIndex)
+{
+    // TODO: Ensure pointIndex is not out of bounds.
+
+    return this->distances[pointIndex];
+}
+
 std::shared_ptr<blaze::DynamicVector<double>>
 ClusterAssignmentList::calcAverageClusterCosts()
 {
