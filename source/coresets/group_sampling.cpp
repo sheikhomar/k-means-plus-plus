@@ -45,7 +45,7 @@ GroupSampling::run(const blaze::DynamicMatrix<double> &data)
         double averageClusterCost = (*averageClusterCosts)[c];
 
         bool pointPutInRing = false;
-        for (int l = ringRangeStart; l < ringRangeEnd; l++)
+        for (int l = ringRangeStart; l <= ringRangeEnd; l++)
         {
             // Ring upper bound := Δ_c * 2^l
             double ringLowerBound = averageClusterCost * std::pow(2, l);
