@@ -9,7 +9,7 @@ private:
     size_t numOfCenters;
 
 public:
-    CandidateCentersGenerator(size_t numOfSamples, size_t numOfCenters) : points(numOfSamples), numOfCenters(numOfCenters)
+    CandidateCentersGenerator(size_t n, size_t k) : points(n), numOfCenters(k)
     {
         init();
     }

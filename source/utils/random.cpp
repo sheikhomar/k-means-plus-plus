@@ -21,7 +21,7 @@ Random::Random(int fixedSeed)
     }
     else
     {
-        this->randomEngine.seed((uint)fixedSeed);
+        this->randomEngine.seed(static_cast<uint>(fixedSeed));
     }
 }
 
@@ -52,15 +52,15 @@ Random::runWeightedReservoirSampling(const size_t k, const size_t n, blaze::Dyna
     for (size_t i = 0; i < k; i++)
     {
         (*data)[i] = i;
-        sum = sum + weights[i];
+        sum = sum + static_cast<double>(weights[i]);
     }
 
     for (size_t i = k; i < n; i++)
     {
-        sum = sum + weights[i];
+        sum = sum + static_cast<double>(weights[i]);
 
         // Compute the probability for item i
-        double p_i = k * weights[i] / sum;
+        double p_i = static_cast<double>(k * weights[i]) / sum;
 
         // Random value between 0 and 1
         auto q = this->getDouble();
@@ -96,8 +96,6 @@ Random::choice(const size_t k, const size_t n, blaze::DynamicVector<size_t> weig
 size_t
 Random::choice(blaze::DynamicVector<size_t> weights)
 {
-    auto n = weights.size();
-
     std::discrete_distribution<size_t> weightedChoice(weights.begin(), weights.end());
     size_t pickedIndex = weightedChoice(this->randomEngine);
     return pickedIndex;
