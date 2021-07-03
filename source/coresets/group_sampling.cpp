@@ -56,15 +56,38 @@ GroupSampling::run(const blaze::DynamicMatrix<double> &data)
             // If cost(p, A) is between Δ_c*2^l and Δ_c*2^(l+1) ...
             if (costOfPoint >= ringLowerBound && costOfPoint < ringUpperBound) 
             {
-                printf("Points %3ld => R[%2d, %ld]   cost(p, A) = %0.4f  \n", p, l, c, costOfPoint);
+                printf("Point %3ld with cost(p, A) = %0.4f  ->  R[%2d, %ld]  \n", p, costOfPoint, l, c);
                 pointPutInRing = true;
+                break; // A point cannot belong to multiple rings.
             }
         }
 
         if (pointPutInRing == false)
         {
-            printf("Point %3ld did not get be put in a ring \n", p);
+            //printf("Point %3ld (cost=%0.5f) did not get be put in a ring: ", p, costOfPoint);
+            printf("Point %3ld with cost(p, A) = %0.4f  -> no ring because ", p, costOfPoint);
+
+            double innerMostRingCost = averageClusterCost * std::pow(2, ringRangeStart);
+            double outerMostRingCost = averageClusterCost * std::pow(2, ringRangeEnd+1);
+
+            if (costOfPoint < innerMostRingCost)
+            {
+                // Step 5: Handle points below l's lower range i.e. l<log⁡(1/β)
+
+                printf(" the cost(p, A) falls below the cost range of inner most ring (%.4f)", innerMostRingCost);
+            }
+            else if (costOfPoint > outerMostRingCost)
+            {
+                // Step 6: Handle points above l's upper range i.e., l>log⁡(β)
+
+                printf(" the cost(p, A) is above the cost range of outer most ring (%.4f)", outerMostRingCost);
+            } 
+            else
+            {
+                printf(" something went wrong!"); // TODO: Raise exception.
+            }
+
+            printf("\n");
         }
     }
-    
 }
