@@ -59,6 +59,9 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     }
 
     addPointsOutsideAllRings(data, rings, coresetPoints);
+
+    auto groups = std::make_shared<GroupSet>();
+
     size_t H = 4; // TODO: Fix this. Should be a parameter.
     auto clusterCosts = clusterAssignments.calcClusterCosts();
     for (int l = rings->RangeStart; l <= rings->RangeEnd; l++)
@@ -75,12 +78,20 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
                 auto clusterCost = (*clusterCosts)[c];
                 if (clusterCost >= lowerBound && clusterCost < upperBound)
                 {
-                    rings->getPointsInCluster(c, l);
+                    // Points which belong to cluster `c` and ring `l`
+                    auto ringPoints = rings->getInternalRingPointsInCluster(c, l);
+                    if (ringPoints.size() > 0)
+                    {
+                        auto group = groups->create(j, l, lowerBound, upperBound);
+                        for (size_t i = 0; i < ringPoints.size(); i++)
+                        {
+                            auto ringPoint = ringPoints[i];
+                            group->addPoint(ringPoint->PointIndex, ringPoint->ClusterIndex, ringPoint->PointCost);
+                        }
+                    }
                 }
             }
-            
         }
-        
     }
 }
 

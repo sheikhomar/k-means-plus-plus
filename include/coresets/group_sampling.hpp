@@ -34,13 +34,29 @@ namespace coresets
          * The cost is the distance to the assigned cluster's center.
          */
         const double Cost;
+
+        ClusteredPoint(size_t pointIndex, size_t clusterIndex, double cost) : PointIndex(pointIndex), ClusterIndex(clusterIndex), Cost(cost)
+        {
+        }
     };
 
     /**
      * Represents a group which is uniquely identified by its range value (j) and its ring range value (l) i.e., G_{j,l}
      */
-    struct Group
+    class Group
     {
+
+    public:
+        Group(size_t rangeValue, int ringRangeValue, double lowerBoundCost, double upperBoundCost) : RangeValue(rangeValue), RingRangeValue(ringRangeValue), LowerBoundCost(lowerBoundCost), UpperBoundCost(upperBoundCost)
+        {
+        }
+
+        void addPoint(size_t point, size_t cluster, double cost)
+        {
+            points.push_back(std::make_shared<ClusteredPoint>(point, cluster, cost));
+        }
+
+    private:
         /**
          * The group's range value `j`, it is a non-negative value.
          */
@@ -60,6 +76,24 @@ namespace coresets
          * The upper bound cost of the group.
          */
         const double UpperBoundCost;
+
+        /**
+         * The points assigned to this group.
+         */
+        std::vector<std::shared_ptr<ClusteredPoint>> points;
+    };
+
+    class GroupSet
+    {
+        std::vector<std::shared_ptr<Group>> groups;
+
+    public:
+        std::shared_ptr<Group> create(size_t rangeValue, int ringRangeValue, double lowerBoundCost, double upperBoundCost)
+        {
+            auto group = std::make_shared<Group>(rangeValue, ringRangeValue, lowerBoundCost, upperBoundCost);
+            groups.push_back(group);
+            return group;
+        }
     };
 
     struct InternalRing
@@ -98,7 +132,7 @@ namespace coresets
     {
         std::vector<std::shared_ptr<InternalRing>> internalRings;
         std::vector<std::shared_ptr<ExternalRing>> externalRings;
-        
+
     public:
         const int RangeStart;
         const int RangeEnd;
@@ -176,7 +210,7 @@ namespace coresets
         }
 
         std::vector<size_t>
-        getPointsOutsideAllRings() const 
+        getPointsOutsideAllRings() const
         {
             std::vector<size_t> pointsOutsideAllRings;
             for (size_t i = 0; i < externalRings.size(); i++)
@@ -192,7 +226,7 @@ namespace coresets
         }
 
         std::vector<std::shared_ptr<InternalRing>>
-        getPointsInCluster(size_t clusterIndex, int ringRangeValue)
+        getInternalRingPointsInCluster(size_t clusterIndex, int ringRangeValue)
         {
             std::vector<std::shared_ptr<InternalRing>> rings;
 
@@ -204,7 +238,7 @@ namespace coresets
                     rings.push_back(ring);
                 }
             }
-            
+
             return rings;
         }
     };
@@ -224,7 +258,5 @@ namespace coresets
         makeRings(const std::shared_ptr<clustering::ClusteringResult> clusters);
 
         void addPointsOutsideAllRings(const blaze::DynamicMatrix<double> &data, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints);
-
-
     };
 }
