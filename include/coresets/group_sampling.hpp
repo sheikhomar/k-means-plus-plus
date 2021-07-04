@@ -130,5 +130,7 @@ namespace coresets
 
         std::shared_ptr<RingSet>
         makeRings(const std::shared_ptr<clustering::ClusteringResult> clusters);
+
+        void addPointsOutsideAllRings(const blaze::DynamicMatrix<double> &data, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints);
     };
 }

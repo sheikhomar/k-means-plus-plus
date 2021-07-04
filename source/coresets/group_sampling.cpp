@@ -58,26 +58,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
         coresetPoints.push_back(WeightedPoint(c, weight, true));
     }
 
-    std::vector<size_t> pointIndicesOutsideAllRings = rings->getPointsOutsideAllRings();
-    auto pPrimeSize = pointIndicesOutsideAllRings.size();
-    if (pPrimeSize > 0)
-    {
-        blaze::DynamicMatrix<double> pointsOutsideAllRings(pPrimeSize, data.columns());
-        std::cout << "Points outside all rings = [ ";
-        for (size_t i = 0; i < pPrimeSize; i++)
-        {
-            size_t p = pointIndicesOutsideAllRings[i];
-            blaze::row(pointsOutsideAllRings, i) = blaze::row(data, p);
-            std::cout << p << ", ";
-        }
-        std::cout << "]\n";
-        
-        std::cout << "Points: \n" << pointsOutsideAllRings << "\n";
-
-        // TODO: Complete step 6 by running sensitivity sampling.
-        
-    }
-    
+    addPointsOutsideAllRings(data, rings, coresetPoints);
 }
 
 std::shared_ptr<RingSet>
@@ -151,4 +132,27 @@ GroupSampling::makeRings(const std::shared_ptr<clustering::ClusteringResult> clu
     }
 
     return rings;
+}
+
+void GroupSampling::addPointsOutsideAllRings(const blaze::DynamicMatrix<double> &data, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints)
+{
+    std::vector<size_t> pointIndicesOutsideAllRings = rings->getPointsOutsideAllRings();
+    auto pPrimeSize = pointIndicesOutsideAllRings.size();
+    if (pPrimeSize > 0)
+    {
+        blaze::DynamicMatrix<double> pointsOutsideAllRings(pPrimeSize, data.columns());
+        std::cout << "Points outside all rings = [ ";
+        for (size_t i = 0; i < pPrimeSize; i++)
+        {
+            size_t p = pointIndicesOutsideAllRings[i];
+            blaze::row(pointsOutsideAllRings, i) = blaze::row(data, p);
+            std::cout << p << ", ";
+        }
+        std::cout << "]\n";
+        
+        std::cout << "Points: \n" << pointsOutsideAllRings << "\n";
+
+        // TODO: Run sensitivity sampling.
+        // TODO: Add results of Sensitivity Sampling into coresetPoints
+    }
 }
