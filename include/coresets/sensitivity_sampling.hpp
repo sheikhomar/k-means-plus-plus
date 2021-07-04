@@ -18,11 +18,7 @@ namespace coresets
 
     class SensitivitySampling
     {
-        utils::Random random;
-
     public:
-        SensitivitySampling(const int randomSeed);
-
         std::shared_ptr<CoresetResult>
         run(const blaze::DynamicMatrix<double> &data);
 

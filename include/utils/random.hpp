@@ -18,15 +18,13 @@ namespace utils
         size_t next();
 
     private:
-        std::mt19937 randomEngine;
+        std::mt19937 randomEngine2;
         std::uniform_int_distribution<size_t> sampler;
     };
 
     class Random
     {
     public:
-        Random(int fixedSeed);
-
         /**
          * Returns a random real number in the interval [0.0, 1.0).
          */
@@ -52,6 +50,12 @@ namespace utils
          */
         size_t
         choice(blaze::DynamicVector<size_t> weights);
+
+        /**
+         * @brief Initialises random class.
+         * @param fixedSeed The seed for random number generators. Use a value other than -1 to make the randomized algorithms deterministic. Choose -1 to generate a random seed.
+         */
+        Random(int fixedSeed = 42);
 
     private:
         std::mt19937 randomEngine;

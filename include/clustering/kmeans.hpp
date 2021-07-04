@@ -25,7 +25,6 @@ namespace clustering
         bool initKMeansPlusPlus;
         uint maxIterations;
         double convergenceDiff;
-        utils::Random random;
 
         /**
          * @brief Creates centroids by picking points in the data matrix uniformly at random.
@@ -49,9 +48,8 @@ namespace clustering
          * @param initKMeansPlusPlus Initialise centroids using k-Means++.
          * @param maxIterations Maximum number of iterations.
          * @param convergenceDiff The difference in the norms of the centroids when to stop k-Means iteration.
-         * @param randomSeed The seed for random number generators. Use a value other than -1 to fix make the algorithm deterministic.
          */
-        KMeans(uint numOfClusters, bool initKMeansPlusPlus = true, uint maxIterations = 100, double convergenceDiff = 0.0001, int randomSeed = -1);
+        KMeans(uint numOfClusters, bool initKMeansPlusPlus = true, uint maxIterations = 100, double convergenceDiff = 0.0001);
 
         /**
          * @brief Runs the algorithm.

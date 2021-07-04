@@ -2,39 +2,44 @@
 
 using namespace utils;
 
-RandomIndexer::RandomIndexer(std::mt19937 re, size_t s) : randomEngine(re), sampler(0, s-1)
+
+RandomIndexer::RandomIndexer(std::mt19937 re, size_t s) : randomEngine2(re), sampler(0, s-1)
 {
 }
 
 size_t
 RandomIndexer::next()
 {
-    return sampler(randomEngine);
+    return sampler(randomEngine2);
+}
+
+RandomIndexer
+Random::getIndexer(size_t size)
+{
+    return RandomIndexer(randomEngine, size);
+}
+
+double
+Random::getDouble()
+{
+    return pickRandomValue(randomEngine);
 }
 
 Random::Random(int fixedSeed)
 {
     if (fixedSeed == -1)
     {
-        static std::random_device randomSeed;
-        this->randomEngine.seed(randomSeed());
+        // Source: https://stackoverflow.com/questions/15509270/does-stdmt19937-require-warmup
+        std::array<int, 624> seedData;
+        std::random_device randomDevice;
+        std::generate_n(seedData.data(), seedData.size(), std::ref(randomDevice));
+        std::seed_seq randomSeq(std::begin(seedData), std::end(seedData));
+        randomEngine.seed(randomSeq);
     }
     else
     {
-        this->randomEngine.seed(static_cast<uint>(fixedSeed));
+        randomEngine.seed(static_cast<uint>(fixedSeed));
     }
-}
-
-RandomIndexer
-Random::getIndexer(size_t size)
-{
-    return RandomIndexer(this->randomEngine, size);
-}
-
-double
-Random::getDouble()
-{
-    return pickRandomValue(this->randomEngine);
 }
 
 std::shared_ptr<blaze::DynamicVector<size_t>>

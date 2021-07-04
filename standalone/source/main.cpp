@@ -113,11 +113,11 @@ int main() {
     { 6.0F, -16.0F, }, // Outlier point.
   };
 
-  // kmeans::KMeans kMeansAlg(3, true, 100U, 0.0001, 42);
+  // kmeans::KMeans kMeansAlg(3, true, 100U, 0.0001);
   // auto result = kMeansAlg.run(data);
   // std::cout << "Cluster labels: \n" << result->getCentroids() <<  "\n" ;
 
-  coresets::SensitivitySampling sensitivitySampling(42);
+  coresets::SensitivitySampling sensitivitySampling;
   sensitivitySampling.run(data);
 
   //LocalSearch ls(3, 2);
@@ -131,5 +131,4 @@ int main() {
 
   // coresets::GroupSampling gs;
   // gs.run(data);
-  
 }

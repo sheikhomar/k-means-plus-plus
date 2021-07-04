@@ -42,7 +42,7 @@ LocalSearch::run(const blaze::DynamicMatrix<double> &data)
     size_t n = data.rows();
     size_t k = this->numOfClusters;
 
-    KMeans kMeansAlg(this->numOfClusters, true, 100U, 0.0001, 42);
+    KMeans kMeansAlg(this->numOfClusters);
 
     // Initialise centers using  k-Means++.
     auto centers = kMeansAlg.initCentroidsKMeansPlusPlus(data);
@@ -94,11 +94,11 @@ LocalSearch::run(const blaze::DynamicMatrix<double> &data)
 std::shared_ptr<ClusteringResult>
 LocalSearch::runPlusPlus(const blaze::DynamicMatrix<double> &data, size_t nSamples, size_t nIterations)
 {
-    utils::Random random(42);
+    utils::Random random;
     size_t n = data.rows();
     size_t k = this->numOfClusters;
 
-    KMeans kMeansAlg(this->numOfClusters, true, 100U, 0.0001, 42);
+    KMeans kMeansAlg(this->numOfClusters);
 
     // Initialise centers using  k-Means++.
     auto centers = kMeansAlg.initCentroidsKMeansPlusPlus(data);

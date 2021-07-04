@@ -2,7 +2,7 @@
 
 using namespace clustering;
 
-KMeans::KMeans(uint k, bool kpp, uint miter, double convDiff, int randSeed) : numOfClusters(k), initKMeansPlusPlus(kpp), maxIterations(miter), convergenceDiff(convDiff), random(randSeed)
+KMeans::KMeans(uint k, bool kpp, uint miter, double convDiff) : numOfClusters(k), initKMeansPlusPlus(kpp), maxIterations(miter), convergenceDiff(convDiff)
 {
 }
 
@@ -16,6 +16,7 @@ KMeans::run(const blaze::DynamicMatrix<double> &data)
 blaze::DynamicMatrix<double>
 KMeans::initCentroidsNaive(const blaze::DynamicMatrix<double> &dataPoints)
 {
+  utils::Random random;
   auto n = dataPoints.rows();
   auto d = dataPoints.columns();
   auto k = this->numOfClusters;
@@ -36,6 +37,7 @@ KMeans::initCentroidsNaive(const blaze::DynamicMatrix<double> &dataPoints)
 blaze::DynamicMatrix<double>
 KMeans::initCentroidsKMeansPlusPlus(const blaze::DynamicMatrix<double> &matrix)
 {
+  utils::Random random;
   size_t n = matrix.rows();
   size_t d = matrix.columns();
   auto k = this->numOfClusters;

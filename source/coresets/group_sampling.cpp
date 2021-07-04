@@ -8,7 +8,7 @@ GroupSampling::GroupSampling() : beta(200)
 
 void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
 {
-    utils::Random random(42);
+    utils::Random random;
     const uint kPrime = 3;
     const uint k = kPrime; // TODO: Should be k = 2 * kPrime;
     const uint T = 20;     // T is the number of sampled points. It is hyperparam. Usually T=200*k
@@ -18,7 +18,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     std::vector<WeightedPoint> coresetPoints;
 
     // Step 1: Run k-means++ to get the initial solution A.
-    clustering::KMeans kMeansAlg(k, true, 100U, 0.0001, 42);
+    clustering::KMeans kMeansAlg(k);
     auto result = kMeansAlg.run(data);
     auto centers = result->getCentroids();
 

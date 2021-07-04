@@ -61,16 +61,13 @@ CoresetResult::CoresetResult()
 {
 }
 
-SensitivitySampling::SensitivitySampling(const int randomSeed) : random(randomSeed)
-{
-}
-
-
 std::vector<WeightedPoint>
 SensitivitySampling::calcCoresetPoints(const clustering::ClusterAssignmentList clusterAssignments, const size_t targetCoresetPoints)
 {
     // Generated coresets points that the method returns.
     std::vector<WeightedPoint> coresetPoints;
+
+    utils::Random random;
     auto n = clusterAssignments.getNumberOfPoints();
 
     // Step 2b: compute cost(A). Assume it is the sum of all costs.
@@ -121,7 +118,7 @@ SensitivitySampling::run(const blaze::DynamicMatrix<double> &data)
     uint targetCoresetPoints = 20; // T is the number of sampled points. It is hyperparam. Usually T=200*k
 
     // Step 1: Run k-means++ to get the initial solution A.
-    clustering::KMeans kMeansAlg(kPrime, true, 100U, 0.0001, 42);
+    clustering::KMeans kMeansAlg(kPrime);
     auto result = kMeansAlg.run(data);
 
     auto coresetPoints = calcCoresetPoints(result->getClusterAssignments(), targetCoresetPoints);
