@@ -13,6 +13,55 @@
 
 namespace coresets
 {
+    /**
+     * Represents a reference to a point which has been assigned a cluster.
+     */
+    struct ClusteredPoint
+    {
+        /**
+         * The index of the point in the dataset.
+         */
+        const size_t PointIndex;
+
+        /**
+         * The index of the cluster for which this point is assigned.
+         */
+        const size_t ClusterIndex;
+
+        /**
+         * The cost of this point in its assigned cluster. 
+         * 
+         * The cost is the distance to the assigned cluster's center.
+         */
+        const double Cost;
+    };
+
+    /**
+     * Represents a group which is uniquely identified by its range value (j) and its ring range value (l) i.e., G_{j,l}
+     */
+    struct Group
+    {
+        /**
+         * The group's range value `j`, it is a non-negative value.
+         */
+        const size_t RangeValue;
+
+        /**
+         * The group's ring range value i.e., `l`.
+         */
+        const int RingRangeValue;
+
+        /**
+         * The lower bound cost of the group.
+         */
+        const double LowerBoundCost;
+
+        /**
+         * The upper bound cost of the group.
+         */
+        const double UpperBoundCost;
+    };
+
     struct InternalRing
     {
         const size_t PointIndex;
@@ -49,11 +98,12 @@ namespace coresets
     {
         std::vector<std::shared_ptr<InternalRing>> internalRings;
         std::vector<std::shared_ptr<ExternalRing>> externalRings;
-        const int rangeStart;
-        const int rangeEnd;
-
+        
     public:
-        RingSet(int start, int end) : internalRings(), externalRings(), rangeStart(start), rangeEnd(end)
+        const int RangeStart;
+        const int RangeEnd;
+
+        RingSet(int start, int end) : internalRings(), externalRings(), RangeStart(start), RangeEnd(end)
         {
         }
 
@@ -86,6 +136,31 @@ namespace coresets
         }
 
         size_t
+        countInternalRings() const
+        {
+            return this->internalRings.size();
+        }
+
+        /**
+         * @brief Sums the costs of all points in captured by ring for a given range i.e., cost(R_l) = sum_{p in R_l} cost(p, A)
+         * @param ringRangeValue The ring range value i.e. l
+         */
+        double
+        calcRingCost(int ringRangeValue) const
+        {
+            double sum = 0.0F;
+            for (size_t i = 0; i < internalRings.size(); i++)
+            {
+                auto ring = internalRings[i];
+                if (ring->RangeValue == ringRangeValue)
+                {
+                    sum += ring->PointCost;
+                }
+            }
+            return sum;
+        }
+
+        size_t
         getNumberOfInnerRingPoints(size_t clusterIndex)
         {
             size_t count = 0;
@@ -115,6 +190,23 @@ namespace coresets
 
             return pointsOutsideAllRings;
         }
+
+        std::vector<std::shared_ptr<InternalRing>>
+        getPointsInCluster(size_t clusterIndex, int ringRangeValue)
+        {
+            std::vector<std::shared_ptr<InternalRing>> rings;
+
+            for (size_t i = 0; i < this->internalRings.size(); i++)
+            {
+                auto ring = internalRings[i];
+                if (ring->ClusterIndex == clusterIndex && ring->RangeValue == ringRangeValue)
+                {
+                    rings.push_back(ring);
+                }
+            }
+            
+            return rings;
+        }
     };
 
     class GroupSampling
@@ -132,5 +224,7 @@ namespace coresets
         makeRings(const std::shared_ptr<clustering::ClusteringResult> clusters);
 
         void addPointsOutsideAllRings(const blaze::DynamicMatrix<double> &data, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints);
+
+
     };
 }

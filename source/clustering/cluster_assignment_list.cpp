@@ -126,6 +126,21 @@ ClusterAssignmentList::calcAverageClusterCosts()
     return results;
 }
 
+std::shared_ptr<blaze::DynamicVector<double>>
+ClusterAssignmentList::calcClusterCosts() const
+{
+    auto results = std::make_shared<blaze::DynamicVector<double>>(this->numOfClusters);
+    results->reset();
+    
+    for (size_t p = 0; p < this->numOfPoints; p++) 
+    {
+        auto c = clusters[p];
+        (*results)[c] += distances[p];
+    }
+
+    return results;
+}
+
 ClusterAssignmentList&
 ClusterAssignmentList::operator=(const ClusterAssignmentList &other)
 {
