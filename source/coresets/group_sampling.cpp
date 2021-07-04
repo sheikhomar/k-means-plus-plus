@@ -15,6 +15,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     const size_t n = data.rows();
     const size_t d = data.columns();
     auto coreset = std::make_shared<Coreset>(T, d);
+    std::vector<WeightedPoint> coresetPoints;
 
     // Step 1: Run k-means++ to get the initial solution A.
     clustering::KMeans kMeansAlg(k, true, 100U, 0.0001, 42);
@@ -53,7 +54,8 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
         double weight = static_cast<double>(innerRingPointClusterCount);
 
         // Add center to the coreset.
-        coreset->add(centers, c, weight);
+        printf("Add center of cluster %ld with weight %0.2f to coreset.\n", c, weight);
+        coresetPoints.push_back(WeightedPoint(c, weight, true));
     }
 }
 

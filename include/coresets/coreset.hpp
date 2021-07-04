@@ -9,6 +9,17 @@
 
 namespace coresets
 {
+    struct WeightedPoint
+    {
+        const size_t Index;
+        const double Weight;
+        const bool IsCenter;
+
+        WeightedPoint(size_t index, double weight, bool isCenter) : Index(index), Weight(weight), IsCenter(isCenter)
+        {
+        }
+    };
+
     class Coreset
     {
         const size_t numOfDimensions;
