@@ -117,19 +117,19 @@ int main() {
   // auto result = kMeansAlg.run(data);
   // std::cout << "Cluster labels: \n" << result->getCentroids() <<  "\n" ;
 
-  // coresets::SensitivySampling sensitivitySampling;
-  // sensitivitySampling.run(data);
+  coresets::SensitivitySampling sensitivitySampling(42);
+  sensitivitySampling.run(data);
 
   //LocalSearch ls(3, 2);
   //auto result = ls.run(data);
 
   // auto result = ls.runPlusPlus(data, 10, 100);
-  // auto cost = (result->getClusterAssignments()).calcCost();
+  // auto cost = (result->getClusterAssignments()).getTotalCost();
   // printf("Final cost: %0.5f\n", cost);
 
   // std::cout << "Final centers: \n" << result->getCentroids();
 
-  coresets::GroupSampling gs;
-  gs.run(data);
+  // coresets::GroupSampling gs;
+  // gs.run(data);
   
 }
