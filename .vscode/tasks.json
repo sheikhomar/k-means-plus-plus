@@ -2,14 +2,14 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: g++ build active file",
+            "label": "build helloworld",
             "command": "/usr/bin/g++",
             "args": [
                 "-std=c++17",
                 "-g",
-                "${workspaceFolder}/src/*.cpp",
+                "${workspaceFolder}/src/helloworld.cpp",
                 "-o",
-                "${workspaceFolder}/bin/app"
+                "${workspaceFolder}/bin/helloworld"
             ],
             "options": {
                 "cwd": "${fileDirname}"
