@@ -57,6 +57,27 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
         printf("Add center of cluster %ld with weight %0.2f to coreset.\n", c, weight);
         coresetPoints.push_back(WeightedPoint(c, weight, true));
     }
+
+    std::vector<size_t> pointIndicesOutsideAllRings = rings->getPointsOutsideAllRings();
+    auto pPrimeSize = pointIndicesOutsideAllRings.size();
+    if (pPrimeSize > 0)
+    {
+        blaze::DynamicMatrix<double> pointsOutsideAllRings(pPrimeSize, data.columns());
+        std::cout << "Points outside all rings = [ ";
+        for (size_t i = 0; i < pPrimeSize; i++)
+        {
+            size_t p = pointIndicesOutsideAllRings[i];
+            blaze::row(pointsOutsideAllRings, i) = blaze::row(data, p);
+            std::cout << p << ", ";
+        }
+        std::cout << "]\n";
+        
+        std::cout << "Points: \n" << pointsOutsideAllRings << "\n";
+
+        // TODO: Complete step 6 by running sensitivity sampling.
+        
+    }
+    
 }
 
 std::shared_ptr<RingSet>

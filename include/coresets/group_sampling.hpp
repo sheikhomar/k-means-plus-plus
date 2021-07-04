@@ -99,6 +99,22 @@ namespace coresets
             }
             return count;
         }
+
+        std::vector<size_t>
+        getPointsOutsideAllRings() const 
+        {
+            std::vector<size_t> pointsOutsideAllRings;
+            for (size_t i = 0; i < externalRings.size(); i++)
+            {
+                auto ring = externalRings[i];
+                if (ring->IsInner == false)
+                {
+                    pointsOutsideAllRings.push_back(ring->PointIndex);
+                }
+            }
+
+            return pointsOutsideAllRings;
+        }
     };
 
     class GroupSampling
