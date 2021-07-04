@@ -27,6 +27,6 @@ namespace coresets
         run(const blaze::DynamicMatrix<double> &data);
 
         std::vector<WeightedPoint>
-        calcCoresetPoints(const std::shared_ptr<clustering::ClusteringResult> result, const size_t targetCoresetPoints);
+        calcCoresetPoints(const clustering::ClusterAssignmentList clusterAssignments, const size_t targetCoresetPoints);
     };
 }

@@ -67,26 +67,17 @@ SensitivitySampling::SensitivitySampling(const int randomSeed) : random(randomSe
 
 
 std::vector<WeightedPoint>
-SensitivitySampling::calcCoresetPoints(const std::shared_ptr<clustering::ClusteringResult> result, const size_t targetCoresetPoints)
+SensitivitySampling::calcCoresetPoints(const clustering::ClusterAssignmentList clusterAssignments, const size_t targetCoresetPoints)
 {
     // Generated coresets points that the method returns.
     std::vector<WeightedPoint> coresetPoints;
-
-    // Number of points that should be in the coreset.
-    //auto T = targetCoresetPoints;
-    auto centers = result->getCentroids();
-    auto clusterAssignments = result->getClusterAssignments();
     auto n = clusterAssignments.getNumberOfPoints();
-
-    // Step 2a: compute cost(p, A). The cost of each point is the
-    // distance between the point and its closest centroid.
-    auto costs = clusterAssignments.getCentroidDistances();
 
     // Step 2b: compute cost(A). Assume it is the sum of all costs.
     auto sumOfCosts = clusterAssignments.getTotalCost();
 
     // Step 2c: compute the sampling distribution: cost(p, A)/cost(A)
-    auto samplingDistribution = costs / sumOfCosts;
+    auto samplingDistribution = clusterAssignments.getNormalizedCosts();
 
     // TODO: Investigate why small weights generate samples that are all zeros.
     auto sampledIndices = random.choice(targetCoresetPoints, n, samplingDistribution * 100);
@@ -100,7 +91,7 @@ SensitivitySampling::calcCoresetPoints(const std::shared_ptr<clustering::Cluster
         size_t sampledPointIndex = (*sampledIndices)[j];
 
         // We scale the cost of the sampled point by a factor of T i.e. T * cost(p,A)
-        double scaledCostPofA = targetCoresetPoints * costs[sampledPointIndex];
+        double scaledCostPofA = targetCoresetPoints * clusterAssignments.getPointCost(sampledPointIndex);
 
         // The weight of the sampled point is now: cost(A) / (T*cost(p,A))
         double weight = sumOfCosts / scaledCostPofA;
@@ -133,7 +124,7 @@ SensitivitySampling::run(const blaze::DynamicMatrix<double> &data)
     clustering::KMeans kMeansAlg(kPrime, true, 100U, 0.0001, 42);
     auto result = kMeansAlg.run(data);
 
-    auto coresetPoints = calcCoresetPoints(result, targetCoresetPoints);
+    auto coresetPoints = calcCoresetPoints(result->getClusterAssignments(), targetCoresetPoints);
 
     return std::make_shared<CoresetResult>();
 }
