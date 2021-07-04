@@ -44,6 +44,7 @@ Random::runWeightedReservoirSampling(const size_t k, const size_t n, blaze::Dyna
 
     auto indexSampler = this->getIndexer(k);
     auto data = std::make_shared<blaze::DynamicVector<size_t>>(k);
+    data->reset();
 
     // Algorithm by M. T. Chao
     double sum = 0;
@@ -81,6 +82,7 @@ Random::choice(const size_t k, const size_t n, blaze::DynamicVector<size_t> weig
     assert(weights.size() == n);
 
     auto result = std::make_shared<blaze::DynamicVector<size_t>>(k);
+    result->reset();
 
     std::discrete_distribution<size_t> weightedChoice(weights.begin(), weights.end());
     
