@@ -55,19 +55,19 @@ namespace clustering
          * @param pointIndex The index of the point for which to return the cluster index.
          */
         size_t
-        getCluster(size_t pointIndex);
+        getCluster(size_t pointIndex) const;
 
         /**
          * @brief Returns the total number of points in the dataset.
          */
         size_t
-        getNumberOfPoints();
+        getNumberOfPoints() const;
 
         /**
          * @brief Returns the number of clusters that are generated.
          */
         size_t
-        getNumberOfClusters();
+        getNumberOfClusters() const;
 
         /**
          * @brief Returns the distance of each point to its assigned cluster's centroid.
@@ -79,15 +79,15 @@ namespace clustering
          * @brief Returns the number of points in a cluster.
          */
         size_t
-        countPointsInCluster(size_t clusterIndex);
+        countPointsInCluster(size_t clusterIndex) const;
 
         /**
-         * @brief Returns the cost of the cluster assignments. 
+         * @brief Returns the total cost of the cluster assignments. 
          * 
-         * The cost is the sum of pairwise distances between each point and its closest center.
+         * This cost is the sum of pairwise distances between each point and its closest center.
          */
         double
-        calcCost();
+        getTotalCost() const;
 
         /**
          * @brief Returns the cost of a point i.e.: cost(p, A).
@@ -95,7 +95,7 @@ namespace clustering
          * The cost is the distance between a point and its clostest center.
          */
         double
-        getPointCost(size_t pointIndex);
+        getPointCost(size_t pointIndex) const;
 
         /**
          * @brief Returns the average costs of each cluster.

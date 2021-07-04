@@ -52,7 +52,7 @@ LocalSearch::run(const blaze::DynamicMatrix<double> &data)
     clusterAssignments.assignAll(data, centers);
 
     // Let the cost of the above clusterings be the best cost seen so far.
-    double bestCost = clusterAssignments.calcCost();
+    double bestCost = clusterAssignments.getTotalCost();
     auto bestCenters = centers;
     auto swapClusterAssignments = clusterAssignments;
     auto bestClusterAssignments = swapClusterAssignments;
@@ -73,7 +73,7 @@ LocalSearch::run(const blaze::DynamicMatrix<double> &data)
             swapClusterAssignments.assignAll(data, centers);
 
             // The cost after the swap.
-            double cost = swapClusterAssignments.calcCost();
+            double cost = swapClusterAssignments.getTotalCost();
 
             printf("Swaping cluster %3ld with point %3ld result in cost %0.5f\n", c, p, cost);
 
@@ -108,7 +108,7 @@ LocalSearch::runPlusPlus(const blaze::DynamicMatrix<double> &data, size_t nSampl
     clusterAssignments.assignAll(data, centers);
 
     // Let the cost of the above clusterings be the best cost seen so far.
-    auto bestCost = clusterAssignments.calcCost();
+    auto bestCost = clusterAssignments.getTotalCost();
     auto bestCenters = centers;
     auto bestClusterAssignments = clusterAssignments;
 
@@ -145,7 +145,7 @@ resetIteration:
                 clusterAssignments.assignAll(data, centers);
 
                 // The cost after the swap.
-                double cost = clusterAssignments.calcCost();
+                double cost = clusterAssignments.getTotalCost();
 
                 // printf("Swaping cluster %3ld with point %3ld costs %0.5f\n", c, p, cost);
 

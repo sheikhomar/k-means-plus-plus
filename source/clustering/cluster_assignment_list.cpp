@@ -50,20 +50,20 @@ ClusterAssignmentList::assignAll(const blaze::DynamicMatrix<double> &dataPoints,
 }
 
 size_t
-ClusterAssignmentList::getCluster(size_t pointIndex)
+ClusterAssignmentList::getCluster(size_t pointIndex) const
 {
     // TODO: Ensure arguments are not out of range to avoid runtime errors.
     return clusters[pointIndex];
 }
 
 size_t
-ClusterAssignmentList::getNumberOfPoints()
+ClusterAssignmentList::getNumberOfPoints() const
 {
     return this->numOfPoints;
 }
 
 size_t
-ClusterAssignmentList::getNumberOfClusters()
+ClusterAssignmentList::getNumberOfClusters() const
 {
     return this->numOfClusters;
 }
@@ -75,7 +75,7 @@ ClusterAssignmentList::getCentroidDistances()
 }
 
 size_t
-ClusterAssignmentList::countPointsInCluster(size_t clusterIndex)
+ClusterAssignmentList::countPointsInCluster(size_t clusterIndex) const
 {
     size_t count = 0;
     for (size_t p = 0; p < this->numOfPoints; p++)
@@ -90,13 +90,13 @@ ClusterAssignmentList::countPointsInCluster(size_t clusterIndex)
 }
 
 double
-ClusterAssignmentList::calcCost()
+ClusterAssignmentList::getTotalCost() const
 {
     return blaze::sum(this->distances);
 }
 
 double
-ClusterAssignmentList::getPointCost(size_t pointIndex)
+ClusterAssignmentList::getPointCost(size_t pointIndex) const
 {
     // TODO: Ensure pointIndex is not out of bounds.
 
