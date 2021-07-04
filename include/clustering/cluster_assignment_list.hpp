@@ -103,6 +103,12 @@ namespace clustering
         std::shared_ptr<blaze::DynamicVector<double>>
         calcAverageClusterCosts();
 
+        /**
+         * @brief Returns the normalized cost of each point i.e.: cost(p, A) / sum_p { cost(p, A) }.
+         */
+        blaze::DynamicVector<double>
+        getNormalizedCosts() const;
+
     private:
         /**
          * The total number of points in the dataset.

@@ -135,3 +135,9 @@ ClusterAssignmentList::operator=(const ClusterAssignmentList &other)
     this->distances = other.distances;
     return *this;
 }
+
+blaze::DynamicVector<double>
+ClusterAssignmentList::getNormalizedCosts() const
+{
+    return distances / this->getTotalCost();
+}
