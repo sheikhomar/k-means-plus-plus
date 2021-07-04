@@ -13,11 +13,13 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     const uint k = kPrime; // TODO: Should be k = 2 * kPrime;
     const uint T = 20;     // T is the number of sampled points. It is hyperparam. Usually T=200*k
     const size_t n = data.rows();
+    const size_t d = data.columns();
+    auto coreset = std::make_shared<Coreset>(T, d);
 
     // Step 1: Run k-means++ to get the initial solution A.
     clustering::KMeans kMeansAlg(k, true, 100U, 0.0001, 42);
     auto result = kMeansAlg.run(data);
-    auto A = result->getCentroids();
+    auto centers = result->getCentroids();
 
     auto clusterAssignments = result->getClusterAssignments();
 
@@ -30,13 +32,36 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     }
 
     auto rings = this->makeRings(result);
+
+    // Step 5: Handle points that are below the lowest ring range i.e. l < log(1/beta).
+    // These are called inner-most external rings. Since these points are very close to
+    // their corresponding cluster centers, we add their centers to the coreset weighted
+    // by the number of points in the inner-most external ring of that cluster.
+    for (size_t c = 0; c < k; c++)
+    {
+        // The number of points in the inner-most external ring for cluster `c`
+        auto innerRingPointClusterCount = rings->getNumberOfInnerRingPoints(c);
+
+        if (innerRingPointClusterCount == 0)
+        {
+            // Not all clusters may have points in the inner-most external ring, so
+            // do not add center of the curresponding cluster `c` to the coreset.
+            continue;
+        }
+
+        // The weight of the coreset point for the center of cluster `c`
+        double weight = static_cast<double>(innerRingPointClusterCount);
+
+        // Add center to the coreset.
+        coreset->add(centers, c, weight);
+    }
 }
 
 std::shared_ptr<RingSet>
 GroupSampling::makeRings(const std::shared_ptr<clustering::ClusteringResult> clusters)
 {
     auto clusterAssignments = clusters->getClusterAssignments();
-    const int ringRangeStart = -std::log10(static_cast<double>(beta));
+    const int ringRangeStart = -static_cast<int>(floor(std::log10(static_cast<double>(beta))));
     const int ringRangeEnd = -ringRangeStart;
     auto rings = std::make_shared<RingSet>(ringRangeStart, ringRangeEnd);
     const auto n = clusterAssignments.getNumberOfPoints();

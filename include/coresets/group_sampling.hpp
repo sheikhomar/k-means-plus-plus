@@ -8,6 +8,7 @@
 
 #include <clustering/clustering_result.hpp>
 #include <clustering/kmeans.hpp>
+#include <coresets/coreset.hpp>
 #include <utils/random.hpp>
 
 namespace coresets
@@ -52,7 +53,7 @@ namespace coresets
         const int rangeEnd;
 
     public:
-        RingSet(int start, int end) : internalRings(), externalRings(), rangeStart(start), rangeEnd(rangeEnd)
+        RingSet(int start, int end) : internalRings(), externalRings(), rangeStart(start), rangeEnd(end)
         {
         }
 
@@ -82,6 +83,21 @@ namespace coresets
             }
 
             printf("\n");
+        }
+
+        size_t
+        getNumberOfInnerRingPoints(size_t clusterIndex)
+        {
+            size_t count = 0;
+            for (size_t i = 0; i < externalRings.size(); i++)
+            {
+                auto ring = externalRings[i];
+                if (ring->ClusterIndex == clusterIndex && ring->IsInner)
+                {
+                    count++;
+                }
+            }
+            return count;
         }
     };
 
