@@ -47,11 +47,18 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
         auto groupCost = group->calcTotalCost();
         auto normalizedGroupCost = groupCost / totalCost;
         auto numSamples = static_cast<size_t>(ceil(T * normalizedGroupCost));
+        auto sampledPoints = random.choice(groupPoints, numSamples);
 
         printf("Group j=%ld l=%2d:   number of points=%2ld   cost=%2.4f   normalized cost=%0.4f   samples=%ld \n",
             group->RangeValue, group->RingRangeValue, groupPoints.size(), group->calcTotalCost(), normalizedGroupCost, 
             numSamples
         );
+
+        printf("  Sampled points from group:\n");
+        for (size_t i = 0; i < sampledPoints.size(); i++)
+        {
+            printf("    Point index %ld\n", sampledPoints[i]->PointIndex);
+        }
     }
 }
 
