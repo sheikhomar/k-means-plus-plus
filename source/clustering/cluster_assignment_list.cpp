@@ -104,7 +104,7 @@ ClusterAssignmentList::getPointCost(size_t pointIndex) const
 }
 
 std::shared_ptr<blaze::DynamicVector<double>>
-ClusterAssignmentList::calcAverageClusterCosts()
+ClusterAssignmentList::calcAverageClusterCosts() const
 {
     auto results = std::make_shared<blaze::DynamicVector<double>>(this->numOfClusters);
     results->reset();
