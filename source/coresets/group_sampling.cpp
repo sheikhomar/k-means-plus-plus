@@ -36,7 +36,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
 
     addInnerMostRingPoints(clusterAssignments, rings, coresetPoints);
 
-    addPointsOutsideAllRings(data, rings, coresetPoints);
+    addOuterMostRingPoints(data, rings, coresetPoints);
 
     auto groups = makeGroups(clusterAssignments, rings, 4);
 }
@@ -143,8 +143,9 @@ void GroupSampling::addInnerMostRingPoints(const clustering::ClusterAssignmentLi
     }
 }
 
-void GroupSampling::addPointsOutsideAllRings(const blaze::DynamicMatrix<double> &data, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints)
+void GroupSampling::addOuterMostRingPoints(const blaze::DynamicMatrix<double> &data, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints)
 {
+    // First, make a matrix that consists of points in the dataset that are captured by the outer-most ring.
     std::vector<size_t> pointIndicesOutsideAllRings = rings->getPointsOutsideAllRings();
     auto pPrimeSize = pointIndicesOutsideAllRings.size();
     if (pPrimeSize > 0)
