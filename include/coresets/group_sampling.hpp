@@ -47,16 +47,6 @@ namespace coresets
     {
 
     public:
-        Group(size_t rangeValue, int ringRangeValue, double lowerBoundCost, double upperBoundCost) : RangeValue(rangeValue), RingRangeValue(ringRangeValue), LowerBoundCost(lowerBoundCost), UpperBoundCost(upperBoundCost)
-        {
-        }
-
-        void addPoint(size_t point, size_t cluster, double cost)
-        {
-            points.push_back(std::make_shared<ClusteredPoint>(point, cluster, cost));
-        }
-
-    private:
         /**
          * The group's range value `j`, it is a non-negative value.
          */
@@ -77,6 +67,24 @@ namespace coresets
          */
         const double UpperBoundCost;
 
+        Group(size_t rangeValue, int ringRangeValue, double lowerBoundCost, double upperBoundCost) : RangeValue(rangeValue), RingRangeValue(ringRangeValue), LowerBoundCost(lowerBoundCost), UpperBoundCost(upperBoundCost)
+        {
+        }
+
+        void addPoint(size_t point, size_t cluster, double cost)
+        {
+            points.push_back(std::make_shared<ClusteredPoint>(point, cluster, cost));
+        }
+
+        const std::vector<std::shared_ptr<ClusteredPoint>>&
+        getPoints() const
+        {
+            return points;
+        }
+
+    private:
+
+
         /**
          * The points assigned to this group.
          */
@@ -93,6 +101,23 @@ namespace coresets
             auto group = std::make_shared<Group>(rangeValue, ringRangeValue, lowerBoundCost, upperBoundCost);
             groups.push_back(group);
             return group;
+        }
+
+        size_t size() const
+        {
+            return this->groups.size();
+        }
+
+        std::shared_ptr<Group>
+        operator[](size_t index) const
+        {
+            return this->groups[index];
+        }
+
+        std::shared_ptr<Group>
+        get(size_t index) const
+        {
+            return this->groups[index];
         }
     };
 
