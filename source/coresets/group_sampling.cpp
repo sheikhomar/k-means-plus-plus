@@ -60,39 +60,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
 
     addPointsOutsideAllRings(data, rings, coresetPoints);
 
-    auto groups = std::make_shared<GroupSet>();
-
-    size_t H = 4; // TODO: Fix this. Should be a parameter.
-    auto clusterCosts = clusterAssignments.calcClusterCosts();
-    for (int l = rings->RangeStart; l <= rings->RangeEnd; l++)
-    {
-        double ringCost = rings->calcRingCost(l);
-        
-        for (size_t j = 0; j < H; j++)
-        {
-            double lowerBound = 1/k * pow(2, -j) * ringCost;
-            double upperBound = 1/k * pow(2, -j+1) * ringCost;
-
-            for (size_t c = 0; c < k; c++)
-            {
-                auto clusterCost = (*clusterCosts)[c];
-                if (clusterCost >= lowerBound && clusterCost < upperBound)
-                {
-                    // Points which belong to cluster `c` and ring `l`
-                    auto ringPoints = rings->getInternalRingPointsInCluster(c, l);
-                    if (ringPoints.size() > 0)
-                    {
-                        auto group = groups->create(j, l, lowerBound, upperBound);
-                        for (size_t i = 0; i < ringPoints.size(); i++)
-                        {
-                            auto ringPoint = ringPoints[i];
-                            group->addPoint(ringPoint->PointIndex, ringPoint->ClusterIndex, ringPoint->PointCost);
-                        }
-                    }
-                }
-            }
-        }
-    }
+    auto groups = makeGroups(clusterAssignments, rings, 4);
 }
 
 std::shared_ptr<RingSet>
@@ -189,4 +157,43 @@ void GroupSampling::addPointsOutsideAllRings(const blaze::DynamicMatrix<double> 
         // TODO: Run sensitivity sampling.
         // TODO: Add results of Sensitivity Sampling into coresetPoints
     }
+}
+
+std::shared_ptr<GroupSet>
+GroupSampling::makeGroups(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, const size_t numberOfGroups)
+{
+    auto groups = std::make_shared<GroupSet>();
+    auto k = static_cast<double>(clusters.getNumberOfClusters());
+    auto clusterCosts = clusters.calcClusterCosts();
+    for (int l = rings->RangeStart; l <= rings->RangeEnd; l++)
+    {
+        double ringCost = rings->calcRingCost(l);
+        
+        for (size_t j = 0; j < numberOfGroups; j++)
+        {
+            double lowerBound = 1/k * pow(2, -j) * ringCost;
+            double upperBound = 1/k * pow(2, -j+1) * ringCost;
+
+            for (size_t c = 0; c < k; c++)
+            {
+                auto clusterCost = (*clusterCosts)[c];
+                if (clusterCost >= lowerBound && clusterCost < upperBound)
+                {
+                    // Points which belong to cluster `c` and ring `l`
+                    auto ringPoints = rings->getInternalRingPointsInCluster(c, l);
+                    if (ringPoints.size() > 0)
+                    {
+                        auto group = groups->create(j, l, lowerBound, upperBound);
+                        for (size_t i = 0; i < ringPoints.size(); i++)
+                        {
+                            auto ringPoint = ringPoints[i];
+                            group->addPoint(ringPoint->PointIndex, ringPoint->ClusterIndex, ringPoint->PointCost);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return groups;
 }
