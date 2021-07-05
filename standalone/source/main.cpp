@@ -117,8 +117,8 @@ int main() {
   // auto result = kMeansAlg.run(data);
   // std::cout << "Cluster labels: \n" << result->getCentroids() <<  "\n" ;
 
-  coresets::SensitivitySampling sensitivitySampling;
-  sensitivitySampling.run(data);
+  // coresets::SensitivitySampling sensitivitySampling;
+  // sensitivitySampling.run(data);
 
   //LocalSearch ls(3, 2);
   //auto result = ls.run(data);
@@ -129,6 +129,6 @@ int main() {
 
   // std::cout << "Final centers: \n" << result->getCentroids();
 
-  // coresets::GroupSampling gs;
-  // gs.run(data);
+  coresets::GroupSampling gs;
+  gs.run(data);
 }
