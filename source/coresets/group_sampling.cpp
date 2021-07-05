@@ -33,7 +33,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     }
 
     auto rings = this->makeRings(clusterAssignments);
-
+    /*
     addInnerMostRingPoints(clusterAssignments, rings, coresetPoints);
 
     addOuterMostRingPoints(data, rings, coresetPoints);
@@ -60,6 +60,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
             printf("    Point index %ld\n", sampledPoints[i]->PointIndex);
         }
     }
+    */
 }
 
 std::shared_ptr<RingSet>
@@ -88,20 +89,23 @@ GroupSampling::makeRings(const clustering::ClusterAssignmentList &clusterAssignm
         bool pointPutInRing = false;
         for (int l = ringRangeStart; l <= ringRangeEnd; l++)
         {
-            // Ring upper bound := Δ_c * 2^l
-            double ringLowerBound = averageClusterCost * std::pow(2, l);
+            // // Ring upper bound := Δ_c * 2^l
+            // double ringLowerBound = averageClusterCost * std::pow(2, l);
 
-            // Ring upper bound := Δ_c * 2^(l+1)
-            double ringUpperBound = averageClusterCost * std::pow(2, l + 1);
+            // // Ring upper bound := Δ_c * 2^(l+1)
+            // double ringUpperBound = averageClusterCost * std::pow(2, l + 1);
 
-            // If cost(p, A) is between Δ_c*2^l and Δ_c*2^(l+1) ...
-            if (costOfPoint >= ringLowerBound && costOfPoint < ringUpperBound)
+            auto ring = rings->findOrCreate(c, l, averageClusterCost);
+
+            // Add point if cost(p, A) is between Δ_c*2^l and Δ_c*2^(l+1) 
+            if (ring->tryAddPoint(p, costOfPoint))
             {
                 pointPutInRing = true;
-                auto ring = std::make_shared<InternalRing>(p, c, costOfPoint, l, ringLowerBound, ringUpperBound);
-                rings->add(ring);
+                //auto ring = std::make_shared<InternalRing>(p, c, costOfPoint, l, ringLowerBound, ringUpperBound);
+                //rings->add(ring);
+                // ring->addPoint(p, costOfPoint);
 
-                // Since a point cannot belong to multiple rings, there is no need to look
+                // Since a point cannot belong to multiple rings, there is no need to
                 // test whether the point `p` falls within the ring of the next range l+1.
                 break;
             }

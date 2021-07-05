@@ -178,10 +178,94 @@ namespace coresets
         ExternalRing &operator=(const ExternalRing &) = delete; // Disallow assignment
     };
 
+    class Ring
+    {
+    public:
+        /**
+         * The cluster for which this ring belongs to.
+         */
+        const size_t ClusterIndex;
+
+        /**
+         * The range value of this ring i.e., `l`.
+         */
+        const int RangeValue;
+
+        /**
+         * The average cost for the cluster associated with this ring.
+         */
+        const double AverageClusterCost;
+
+        Ring(size_t clusterIndex, int rangeValue, double averageClusterCost) : 
+            ClusterIndex(clusterIndex), RangeValue(rangeValue), AverageClusterCost(averageClusterCost)
+        {
+            // Ring upper bound cost := Δ_c * 2^l
+            LowerBoundCost = averageClusterCost * std::pow(2, rangeValue);
+
+            // Ring upper bound cost := Δ_c * 2^(l+1)
+            UpperBoundCost = averageClusterCost * std::pow(2, rangeValue + 1);
+
+            TotalCost = 0.0;
+        }
+
+        /**
+         * @brief Adds a point to the ring if its costs is within the bounds of this ring.
+         * @param pointIndex The index of the point to add to this ring.
+         * @param cost The cost of the point i.e., cost(p, A)
+         * @return `true` if points is added to the ring, otherwise `false`
+         */
+        bool
+        tryAddPoint(size_t pointIndex, double cost)
+        {
+            if (isCostWithinBounds(cost))
+            {
+                printf("Internal Point %3ld with cost(p, A) = %0.4f  ->  R[%2d, %ld]  [%0.4f, %0.4f) \n",
+                   pointIndex, cost, RangeValue, ClusterIndex, LowerBoundCost, UpperBoundCost);
+
+                points.push_back(std::make_shared<ClusteredPoint>(pointIndex, ClusterIndex, cost));
+                TotalCost += cost;
+                return true;
+            }
+
+            return false;
+        }
+
+        bool
+        isCostWithinBounds(double cost)
+        {
+            // If cost(p, A) is between Δ_c*2^l and Δ_c*2^(l+1) ...
+            return cost >= LowerBoundCost && cost < UpperBoundCost;
+        }
+
+        double getLowerBoundCost() { return LowerBoundCost; }
+        double getUpperBoundCost() { return UpperBoundCost; }
+
+        /**
+         * @brief Sums the costs of all points in captured by this ring i.e., cost(R_l) = sum_{p in R_l} cost(p, A)
+         */
+        double getTotalCost() { return TotalCost; }
+
+    private:
+        /**
+         * The points assigned to this ring.
+         */
+        std::vector<std::shared_ptr<ClusteredPoint>> points;
+
+        double LowerBoundCost;
+
+        double UpperBoundCost;
+
+        /**
+         * The sum of the point cost in this ring.
+         */
+        double TotalCost;
+    };
+
     class RingSet
     {
         std::vector<std::shared_ptr<InternalRing>> internalRings;
         std::vector<std::shared_ptr<ExternalRing>> externalRings;
+        std::vector<std::shared_ptr<Ring>> rings;
 
     public:
         const int RangeStart;
@@ -189,6 +273,31 @@ namespace coresets
 
         RingSet(int start, int end) : internalRings(), externalRings(), RangeStart(start), RangeEnd(end)
         {
+        }
+
+        std::shared_ptr<Ring> find(size_t clusterIndex, int rangeValue) const
+        {
+            for (size_t i = 0; i < rings.size(); i++)
+            {
+                auto ring = rings[i];
+                if (ring->ClusterIndex == clusterIndex && ring->RangeValue == rangeValue)
+                {
+                    return ring;
+                }
+            }
+            return nullptr;
+        }
+
+        std::shared_ptr<Ring> findOrCreate(size_t clusterIndex, int rangeValue, double averageClusterCost)
+        {
+            auto ring = find(clusterIndex, rangeValue);
+            if (ring == nullptr)
+            {
+                // printf("Ring for cluster=%ld and l=%2d not found. Creating...\n", clusterIndex, rangeValue);
+                ring = std::make_shared<Ring>(clusterIndex, rangeValue, averageClusterCost);
+                rings.push_back(ring);
+            }
+            return ring;
         }
 
         void add(const std::shared_ptr<InternalRing> ring)
