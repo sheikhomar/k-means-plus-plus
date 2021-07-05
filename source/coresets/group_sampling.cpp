@@ -179,8 +179,9 @@ GroupSampling::makeGroups(const clustering::ClusterAssignmentList &clusters, con
         
         for (size_t j = 0; j < numberOfGroups; j++)
         {
-            double lowerBound = 1/k * pow(2, -j) * ringCost;
-            double upperBound = 1/k * pow(2, -j+1) * ringCost;
+            double jDouble = static_cast<double>(j);
+            double lowerBound = 1/k * pow(2, -jDouble    ) * ringCost;
+            double upperBound = 1/k * pow(2, -jDouble + 1) * ringCost;
 
             for (size_t c = 0; c < k; c++)
             {
