@@ -52,6 +52,31 @@ namespace utils
         choice(blaze::DynamicVector<size_t> weights);
 
         /**
+         * @brief Select a number of elements from vector uniformly at random.
+         * @param elements A collection of elements to sample from.
+         * @param numberOfElements The number of samples to return.
+         */
+        template <typename T>
+        std::vector<T>
+        choice(const std::vector<T> &elements, const size_t numberOfElements)
+        {
+            // Notice that the templated class function is implemented in this header
+            // file because if we tried to move it in the source file then the linker
+            // error with "undefined reference to". For more information about this issue
+            // read https://bytefreaks.net/programming-2/c/c-undefined-reference-to-templated-class-function
+            std::vector<T> samples;
+            auto indexSampler = getIndexer(elements.size());
+
+            for (size_t i = 0; i < numberOfElements; i++)
+            {
+                auto sampledIndex = indexSampler.next();
+                samples.push_back(elements[sampledIndex]);
+            }
+
+            return samples;
+        }
+
+        /**
          * @brief Initialises random class.
          * @param fixedSeed The seed for random number generators. Use a value other than -1 to make the randomized algorithms deterministic. Choose -1 to generate a random seed.
          */
