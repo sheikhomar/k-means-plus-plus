@@ -172,7 +172,7 @@ GroupSampling::makeGroups(const clustering::ClusterAssignmentList &clusters, con
 {
     auto groups = std::make_shared<GroupSet>();
     auto k = static_cast<double>(clusters.getNumberOfClusters());
-    auto clusterCosts = clusters.calcClusterCosts();
+    auto clusterCosts = clusters.calcAverageClusterCosts();
     for (int l = rings->RangeStart; l <= rings->RangeEnd; l++)
     {
         double ringCost = rings->calcRingCost(l);
