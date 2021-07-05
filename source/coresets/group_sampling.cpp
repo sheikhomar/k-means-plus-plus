@@ -32,7 +32,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
         printf("Cluster %ld's average cost is %.4f\n", c, (*averageClusterCosts)[c]);
     }
 
-    auto rings = this->makeRings(result);
+    auto rings = this->makeRings(clusterAssignments);
 
     addInnerMostRingPoints(clusterAssignments, rings, coresetPoints);
 
@@ -63,9 +63,8 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
 }
 
 std::shared_ptr<RingSet>
-GroupSampling::makeRings(const std::shared_ptr<clustering::ClusteringResult> clusters)
+GroupSampling::makeRings(const clustering::ClusterAssignmentList &clusterAssignments)
 {
-    auto clusterAssignments = clusters->getClusterAssignments();
     const int ringRangeStart = -static_cast<int>(floor(std::log10(static_cast<double>(beta))));
     const int ringRangeEnd = -ringRangeStart;
     auto rings = std::make_shared<RingSet>(ringRangeStart, ringRangeEnd);

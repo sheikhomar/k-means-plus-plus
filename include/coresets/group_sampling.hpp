@@ -76,7 +76,7 @@ namespace coresets
             points.push_back(std::make_shared<ClusteredPoint>(point, cluster, cost));
         }
 
-        const std::vector<std::shared_ptr<ClusteredPoint>>&
+        const std::vector<std::shared_ptr<ClusteredPoint>> &
         getPoints() const
         {
             return points;
@@ -90,13 +90,11 @@ namespace coresets
             {
                 sum += points[i]->Cost;
             }
-            
+
             return sum;
         }
 
     private:
-
-
         /**
          * The points assigned to this group.
          */
@@ -143,7 +141,7 @@ namespace coresets
                 costs[i] = groupCost;
                 sumOfGroupCosts += groupCost;
             }
-            
+
             return costs / sumOfGroupCosts;
         }
     };
@@ -307,7 +305,7 @@ namespace coresets
         const size_t beta;
 
         std::shared_ptr<RingSet>
-        makeRings(const std::shared_ptr<clustering::ClusteringResult> clusters);
+        makeRings(const clustering::ClusterAssignmentList &clusters);
 
         void addInnerMostRingPoints(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints);
 
