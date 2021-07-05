@@ -131,6 +131,21 @@ namespace coresets
         {
             return this->groups[index];
         }
+
+        blaze::DynamicVector<double>
+        calcNormalizedCosts() const
+        {
+            blaze::DynamicVector<double> costs(this->groups.size());
+            double sumOfGroupCosts = 0.0;
+            for (size_t i = 0; i < this->groups.size(); i++)
+            {
+                auto groupCost = this->groups[i]->calcTotalCost();
+                costs[i] = groupCost;
+                sumOfGroupCosts += groupCost;
+            }
+            
+            return costs / sumOfGroupCosts;
+        }
     };
 
     struct InternalRing
