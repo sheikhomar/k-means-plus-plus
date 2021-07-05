@@ -34,29 +34,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
 
     auto rings = this->makeRings(result);
 
-    // Step 5: Handle points that are below the lowest ring range i.e. l < log(1/beta).
-    // These are called inner-most external rings. Since these points are very close to
-    // their corresponding cluster centers, we add their centers to the coreset weighted
-    // by the number of points in the inner-most external ring of that cluster.
-    for (size_t c = 0; c < k; c++)
-    {
-        // The number of points in the inner-most external ring for cluster `c`
-        auto innerRingPointClusterCount = rings->getNumberOfInnerRingPoints(c);
-
-        if (innerRingPointClusterCount == 0)
-        {
-            // Not all clusters may have points in the inner-most external ring, so
-            // do not add center of the curresponding cluster `c` to the coreset.
-            continue;
-        }
-
-        // The weight of the coreset point for the center of cluster `c`
-        double weight = static_cast<double>(innerRingPointClusterCount);
-
-        // Add center to the coreset.
-        printf("Add center of cluster %ld with weight %0.2f to coreset.\n", c, weight);
-        coresetPoints.push_back(WeightedPoint(c, weight, true));
-    }
+    addInnerMostRingPoints(clusterAssignments, rings, coresetPoints);
 
     addPointsOutsideAllRings(data, rings, coresetPoints);
 
@@ -134,6 +112,35 @@ GroupSampling::makeRings(const std::shared_ptr<clustering::ClusteringResult> clu
     }
 
     return rings;
+}
+
+void GroupSampling::addInnerMostRingPoints(const clustering::ClusterAssignmentList &clusters, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints)
+{
+    // Step 5: Handle points that are below the lowest ring range i.e. l < log(1/beta).
+    // These are called inner-most external rings. Since these points are very close to
+    // their corresponding cluster centers, we add their centers to the coreset weighted
+    // by the number of points in the inner-most external ring of that cluster.
+    auto k = clusters.getNumberOfClusters();
+
+    for (size_t c = 0; c < k; c++)
+    {
+        // The number of points in the inner-most external ring for cluster `c`
+        auto innerRingPointClusterCount = rings->getNumberOfInnerRingPoints(c);
+
+        if (innerRingPointClusterCount == 0)
+        {
+            // Not all clusters may have points in the inner-most external ring, so
+            // do not add center of the curresponding cluster `c` to the coreset.
+            continue;
+        }
+
+        // The weight of the coreset point for the center of cluster `c`
+        double weight = static_cast<double>(innerRingPointClusterCount);
+
+        // Add center to the coreset.
+        printf("Add center of cluster %ld with weight %0.2f to coreset.\n", c, weight);
+        coresetPoints.push_back(WeightedPoint(c, weight, true));
+    }
 }
 
 void GroupSampling::addPointsOutsideAllRings(const blaze::DynamicMatrix<double> &data, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints)
