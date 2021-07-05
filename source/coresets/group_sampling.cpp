@@ -39,16 +39,20 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     addOuterMostRingPoints(data, rings, coresetPoints);
 
     auto groups = makeGroups(clusterAssignments, rings, 4);
-
+    auto totalCost = clusterAssignments.getTotalCost();
     for (size_t i = 0; i < groups->size(); i++)
     {
         auto group = groups->get(i);
         auto groupPoints = group->getPoints();
-        printf("Group j=%ld  l=%d  has cost %0.4f , number of points: %ld\n",
-            group->RangeValue, group->RingRangeValue, group->calcTotalCost(), groupPoints.size()
+        auto groupCost = group->calcTotalCost();
+        auto normalizedGroupCost = groupCost / totalCost;
+        auto numSamples = static_cast<size_t>(ceil(T * normalizedGroupCost));
+
+        printf("Group j=%ld l=%2d:   number of points=%2ld   cost=%2.4f   normalized cost=%0.4f   samples=%ld \n",
+            group->RangeValue, group->RingRangeValue, groupPoints.size(), group->calcTotalCost(), normalizedGroupCost, 
+            numSamples
         );
     }
-    
 }
 
 std::shared_ptr<RingSet>
