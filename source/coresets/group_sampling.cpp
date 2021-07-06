@@ -33,7 +33,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     }
 
     auto rings = this->makeRings(clusterAssignments);
-    /*
+    
     addInnerMostRingPoints(clusterAssignments, rings, coresetPoints);
 
     addOuterMostRingPoints(data, rings, coresetPoints);
@@ -60,7 +60,6 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
             printf("    Point index %ld\n", sampledPoints[i]->PointIndex);
         }
     }
-    */
 }
 
 std::shared_ptr<RingSet>
@@ -89,21 +88,12 @@ GroupSampling::makeRings(const clustering::ClusterAssignmentList &clusterAssignm
         bool pointPutInRing = false;
         for (int l = ringRangeStart; l <= ringRangeEnd; l++)
         {
-            // // Ring upper bound := Δ_c * 2^l
-            // double ringLowerBound = averageClusterCost * std::pow(2, l);
-
-            // // Ring upper bound := Δ_c * 2^(l+1)
-            // double ringUpperBound = averageClusterCost * std::pow(2, l + 1);
-
             auto ring = rings->findOrCreate(c, l, averageClusterCost);
 
-            // Add point if cost(p, A) is between Δ_c*2^l and Δ_c*2^(l+1) 
+            // Add point if cost(p, A) is within bounds i.e. between Δ_c*2^l and Δ_c*2^(l+1) 
             if (ring->tryAddPoint(p, costOfPoint))
             {
                 pointPutInRing = true;
-                //auto ring = std::make_shared<InternalRing>(p, c, costOfPoint, l, ringLowerBound, ringUpperBound);
-                //rings->add(ring);
-                // ring->addPoint(p, costOfPoint);
 
                 // Since a point cannot belong to multiple rings, there is no need to
                 // test whether the point `p` falls within the ring of the next range l+1.
@@ -218,7 +208,8 @@ GroupSampling::makeGroups(const clustering::ClusterAssignmentList &clusters, con
                 if (clusterCost >= lowerBound && clusterCost < upperBound)
                 {
                     // Points which belong to cluster `c` and ring `l`
-                    auto ringPoints = rings->getInternalRingPointsInCluster(c, l);
+                    auto ring = rings->find(c, l);
+                    auto ringPoints = ring->getPoints();
 
                     printf("            Cluster C_%ld has %ld ring points for range %d\n", c, ringPoints.size(), l);
 
@@ -228,7 +219,7 @@ GroupSampling::makeGroups(const clustering::ClusterAssignmentList &clusters, con
                         for (size_t i = 0; i < ringPoints.size(); i++)
                         {
                             auto ringPoint = ringPoints[i];
-                            group->addPoint(ringPoint->PointIndex, ringPoint->ClusterIndex, ringPoint->PointCost);
+                            group->addPoint(ringPoint->PointIndex, ringPoint->ClusterIndex, ringPoint->Cost);
                         }
                     }
                 }
