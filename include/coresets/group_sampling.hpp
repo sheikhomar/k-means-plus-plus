@@ -381,9 +381,15 @@ namespace coresets
         std::shared_ptr<RingSet>
         makeRings(const clustering::ClusterAssignmentList &clusters);
 
-        void addInnerMostRingPoints(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints);
+        /**
+         * @brief Add points inside doughnut holes i.e., points that are closest to cluster centers but are not captured by any rings.
+         */
+        void addShortfallPointsToCoreset(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints);
 
-        void addOuterMostRingPoints(const blaze::DynamicMatrix<double> &data, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints);
+        /**
+         * @brief Add points outside doughnuts i.e., points that are far from cluster centers and are not captured by any rings.
+         */
+        void addOvershootPointsToCoreset(const blaze::DynamicMatrix<double> &data, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints);
 
         std::shared_ptr<GroupSet>
         makeGroups(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, const size_t numberOfGroups);

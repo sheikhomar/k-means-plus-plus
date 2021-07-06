@@ -34,9 +34,9 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
 
     auto rings = this->makeRings(clusterAssignments);
     
-    addInnerMostRingPoints(clusterAssignments, rings, coresetPoints);
+    addShortfallPointsToCoreset(clusterAssignments, rings, coresetPoints);
 
-    addOuterMostRingPoints(data, rings, coresetPoints);
+    addOvershootPointsToCoreset(data, rings, coresetPoints);
 
     auto groups = makeGroups(clusterAssignments, rings, 4);
     auto totalCost = clusterAssignments.getTotalCost();
@@ -128,7 +128,7 @@ GroupSampling::makeRings(const clustering::ClusterAssignmentList &clusterAssignm
     return rings;
 }
 
-void GroupSampling::addInnerMostRingPoints(const clustering::ClusterAssignmentList &clusters, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints)
+void GroupSampling::addShortfallPointsToCoreset(const clustering::ClusterAssignmentList &clusters, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints)
 {
     // Step 5: Handle points that are below the lowest ring range i.e. l < log(1/beta).
     // These are called inner-most external rings. Since these points are very close to
@@ -157,7 +157,7 @@ void GroupSampling::addInnerMostRingPoints(const clustering::ClusterAssignmentLi
     }
 }
 
-void GroupSampling::addOuterMostRingPoints(const blaze::DynamicMatrix<double> &data, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints)
+void GroupSampling::addOvershootPointsToCoreset(const blaze::DynamicMatrix<double> &data, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints)
 {
     // First, make a matrix that consists of points in the dataset that are captured by the outer-most ring.
     std::vector<size_t> pointIndicesOutsideAllRings = rings->getPointsOutsideAllRings();
