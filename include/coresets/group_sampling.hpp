@@ -265,8 +265,9 @@ namespace coresets
     public:
         const int RangeStart;
         const int RangeEnd;
+        const size_t NumberOfClusters;
 
-        RingSet(int start, int end) : externalRings(), RangeStart(start), RangeEnd(end)
+        RingSet(int start, int end, size_t numberOfClusters) : RangeStart(start), RangeEnd(end), NumberOfClusters(numberOfClusters)
         {
         }
 

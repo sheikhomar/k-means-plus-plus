@@ -33,7 +33,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     }
 
     auto rings = this->makeRings(clusterAssignments);
-    
+   
     addShortfallPointsToCoreset(clusterAssignments, rings, coresetPoints);
 
     addOvershootPointsToCoreset(data, rings, coresetPoints);
@@ -60,6 +60,62 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
             printf("    Point index %ld\n", sampledPoints[i]->PointIndex);
         }
     }
+
+    printf("k = %ld\n", k);
+    printf("cluster_labels = [");
+    for (size_t p = 0; p < n; p++)
+    {
+        printf("%ld, ", clusterAssignments.getCluster(p));
+    }
+    printf("]\n");
+
+    printf("cluster_centers = np.array([\n");
+    for (size_t c = 0; c < centers.rows(); c++)
+    {
+        printf("  [");
+        for (size_t d = 0; d < centers.columns(); d++)
+        {
+            printf("%0.5f, ", centers.at(c, d));
+        }
+        printf("],\n");
+    }
+    printf("])\n");
+    
+    printf("ring_ranges = [");
+    for (int l = rings->RangeStart; l <= rings->RangeEnd; l++)
+    {
+        printf("%d, ", l);
+    }
+    printf("]\n");
+
+    printf("rings = np.array([\n");
+    for (size_t c = 0; c < k; c++)
+    {
+        printf("  [");
+        for (int l = rings->RangeStart; l <= rings->RangeEnd; l++)
+        {
+            auto ring = rings->find(c, l);
+            printf("%0.5f, ", ring->getLowerBoundCost());
+
+        }
+        printf("],\n");
+    }
+    printf("])\n");
+
+    
+    printf("rings_upper_bounds = np.array([\n");
+    for (size_t c = 0; c < k; c++)
+    {
+        printf("  [");
+        for (int l = rings->RangeStart; l <= rings->RangeEnd; l++)
+        {
+            auto ring = rings->find(c, l);
+            printf("%0.5f, ", ring->getUpperBoundCost());
+
+        }
+        printf("],\n");
+    }
+    printf("])\n");
 }
 
 std::shared_ptr<RingSet>
@@ -67,9 +123,10 @@ GroupSampling::makeRings(const clustering::ClusterAssignmentList &clusterAssignm
 {
     const int ringRangeStart = -static_cast<int>(floor(std::log10(static_cast<double>(beta))));
     const int ringRangeEnd = -ringRangeStart;
-    auto rings = std::make_shared<RingSet>(ringRangeStart, ringRangeEnd);
     const auto n = clusterAssignments.getNumberOfPoints();
     const auto k = clusterAssignments.getNumberOfClusters();
+
+    auto rings = std::make_shared<RingSet>(ringRangeStart, ringRangeEnd, k);
 
     // Step 2: Compute the average cost for each cluster.
     auto averageClusterCosts = clusterAssignments.calcAverageClusterCosts();
