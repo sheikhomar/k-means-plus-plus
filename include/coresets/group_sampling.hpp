@@ -38,6 +38,8 @@ namespace coresets
         ClusteredPoint(size_t pointIndex, size_t clusterIndex, double cost) : PointIndex(pointIndex), ClusterIndex(clusterIndex), Cost(cost)
         {
         }
+
+        ClusteredPoint &operator=(const ClusteredPoint &) = delete; // Disallow assignment
     };
 
     /**
@@ -70,6 +72,8 @@ namespace coresets
         Group(size_t rangeValue, int ringRangeValue, double lowerBoundCost, double upperBoundCost) : RangeValue(rangeValue), RingRangeValue(ringRangeValue), LowerBoundCost(lowerBoundCost), UpperBoundCost(upperBoundCost)
         {
         }
+
+        Group &operator=(const Group &) = delete; // Disallow assignment
 
         void addPoint(size_t point, size_t cluster, double cost)
         {
@@ -106,6 +110,8 @@ namespace coresets
         std::vector<std::shared_ptr<Group>> groups;
 
     public:
+        GroupSet &operator=(const GroupSet &) = delete; // Disallow assignment
+
         std::shared_ptr<Group> create(size_t rangeValue, int ringRangeValue, double lowerBoundCost, double upperBoundCost)
         {
             auto group = std::make_shared<Group>(rangeValue, ringRangeValue, lowerBoundCost, upperBoundCost);
@@ -179,8 +185,7 @@ namespace coresets
          */
         const double AverageClusterCost;
 
-        Ring(size_t clusterIndex, int rangeValue, double averageClusterCost) : 
-            ClusterIndex(clusterIndex), RangeValue(rangeValue), AverageClusterCost(averageClusterCost)
+        Ring(size_t clusterIndex, int rangeValue, double averageClusterCost) : ClusterIndex(clusterIndex), RangeValue(rangeValue), AverageClusterCost(averageClusterCost)
         {
             // Ring upper bound cost := Δ_c * 2^l
             LowerBoundCost = averageClusterCost * std::pow(2, rangeValue);
@@ -190,6 +195,8 @@ namespace coresets
 
             TotalCost = 0.0;
         }
+
+        Ring &operator=(const Ring &) = delete; // Disallow assignment
 
         /**
          * @brief Adds a point to the ring if its costs is within the bounds of this ring.
@@ -203,7 +210,7 @@ namespace coresets
             if (isCostWithinBounds(cost))
             {
                 printf("Internal Point %3ld with cost(p, A) = %0.4f  ->  R[%2d, %ld]  [%0.4f, %0.4f) \n",
-                   pointIndex, cost, RangeValue, ClusterIndex, LowerBoundCost, UpperBoundCost);
+                       pointIndex, cost, RangeValue, ClusterIndex, LowerBoundCost, UpperBoundCost);
 
                 points.push_back(std::make_shared<ClusteredPoint>(pointIndex, ClusterIndex, cost));
                 TotalCost += cost;
@@ -262,6 +269,8 @@ namespace coresets
         RingSet(int start, int end) : externalRings(), RangeStart(start), RangeEnd(end)
         {
         }
+
+        RingSet &operator=(const RingSet &) = delete; // Disallow assignment
 
         std::shared_ptr<Ring> find(size_t clusterIndex, int rangeValue) const
         {
