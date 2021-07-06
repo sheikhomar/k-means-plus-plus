@@ -394,5 +394,7 @@ namespace coresets
 
         std::shared_ptr<GroupSet>
         makeGroups(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, const size_t numberOfGroups);
+
+        void printPythonCodeForVisualisation(std::shared_ptr<clustering::ClusteringResult> result, std::shared_ptr<RingSet> rings);
     };
 }
