@@ -192,25 +192,39 @@ GroupSampling::makeGroups(const clustering::ClusterAssignmentList &clusters, con
     for (int l = rings->RangeStart; l <= rings->RangeEnd; l++)
     {
         double ringCost = rings->calcRingCost(l);
-        size_t nRingPoints = rings->countRingPoints(l);
-        printf("\n\nRing l=%d   -  cost(R_l) = %0.4f   -   |R_l| = %ld\n", l, ringCost, nRingPoints);
+        size_t nRingPointsForAllClusters = rings->countRingPoints(l);
+        size_t nGroupedPoints = 0;
+        printf("\n\nRing l=%d   -  cost(R_l) = %0.4f   -   |R_l| = %ld\n", l, ringCost, nRingPointsForAllClusters);
         
-        for (size_t j = 0; j < numberOfGroups; j++)
+        for (size_t c = 0; c < k; c++)
         {
-            double jDouble = static_cast<double>(j);
-            double lowerBound = 1/k * pow(2, -jDouble    ) * ringCost;
-            double upperBound = 1/k * pow(2, -jDouble + 1) * ringCost;
+            auto ring = rings->find(c, l);
+            auto clusterCost = ring->getTotalCost();
+            auto ringPoints = ring->getPoints();
 
-            printf("\n   Group j=%ld    lowerBoundCost=%0.4f   upperBoundCost=%0.4f\n", j, lowerBound, upperBound);
+            printf("    Cluster i=%ld  - cost(R_{l,i}) = %0.4f     |R_{l,i}| = %ld\n", c, clusterCost, ring->countPoints());
 
-            for (size_t c = 0; c < k; c++)
+            for (size_t j = 0; j < numberOfGroups; j++)
             {
-                auto ring = rings->find(c, l);
-                auto clusterCost = ring->getTotalCost();
-                auto ringPoints = ring->getPoints();
+                double jDouble = static_cast<double>(j);
+                double lowerBound = 1/k * pow(2, -jDouble    ) * ringCost;
+                double upperBound = 1/k * pow(2, -jDouble + 1) * ringCost;
+                bool shouldAddPointsIntoGroup = false;
+
+                if (j == 0)
+                {
+                    // Group 0 has no upper bound. Notice this can be written as two-liners,
+                    // but is expanded to make it easier to read the code.
+                    shouldAddPointsIntoGroup = clusterCost >= lowerBound; 
+                    //printf("\n      Group j=%ld    lowerBoundCost=%0.4f\n", j, lowerBound, upperBound);
+                }
+                else
+                {
+                    shouldAddPointsIntoGroup = clusterCost >= lowerBound && clusterCost < upperBound;
+                    //printf("\n      Group j=%ld    lowerBoundCost=%0.4f   upperBoundCost=%0.4f\n", j, lowerBound, upperBound);
+                }
                 
-                printf("        Cluster i=%ld  - cost(R_{l,i}) = %0.4f     |R_{l,i}| = %ld\n", c, clusterCost, ring->countPoints());
-                if (clusterCost >= lowerBound && clusterCost < upperBound)
+                if (shouldAddPointsIntoGroup)
                 {
                     // Points which belong to cluster `c` and ring `l`
                     printf("            Adding %ld points to G[l=%d, j=%ld]\n", ringPoints.size(), l, j);
@@ -222,11 +236,21 @@ GroupSampling::makeGroups(const clustering::ClusterAssignmentList &clusters, con
                         {
                             auto ringPoint = ringPoints[i];
                             group->addPoint(ringPoint->PointIndex, ringPoint->ClusterIndex, ringPoint->Cost);
+                            nGroupedPoints++;
                         }
                     }
                 }
             }
         }
+
+        if (nRingPointsForAllClusters != nGroupedPoints)
+        {
+            printf("Not all points in ring l=%d are put in a group. ", l);
+            printf("Number of points in the ring is %ld but only %ld points are grouped.\n",
+                nRingPointsForAllClusters, nGroupedPoints);
+        }
+        assert(nRingPointsForAllClusters == nGroupedPoints);
+
     }
 
     return groups;
