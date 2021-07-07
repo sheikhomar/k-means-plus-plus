@@ -183,6 +183,12 @@ GroupSampling::makeGroups(const clustering::ClusterAssignmentList &clusters, con
 
             printf("    Cluster i=%ld  - cost(R_{l,i}) = %0.4f     |R_{l,i}| = %ld\n", c, clusterCost, ring->countPoints());
 
+            if (ring->countPoints() == 0)
+            {
+                // If nothing is captured by the current ring, then continue to the next ring.
+                continue;
+            }
+
             for (size_t j = 0; j < numberOfGroups; j++)
             {
                 double jDouble = static_cast<double>(j);
@@ -208,15 +214,12 @@ GroupSampling::makeGroups(const clustering::ClusterAssignmentList &clusters, con
                     // Points which belong to cluster `c` and ring `l`
                     printf("            Adding %ld points to G[l=%d, j=%ld]\n", ringPoints.size(), l, j);
 
-                    if (ringPoints.size() > 0)
+                    auto group = groups->create(j, l, lowerBound, upperBound);
+                    for (size_t i = 0; i < ringPoints.size(); i++)
                     {
-                        auto group = groups->create(j, l, lowerBound, upperBound);
-                        for (size_t i = 0; i < ringPoints.size(); i++)
-                        {
-                            auto ringPoint = ringPoints[i];
-                            group->addPoint(ringPoint->PointIndex, ringPoint->ClusterIndex, ringPoint->Cost);
-                            nGroupedPoints++;
-                        }
+                        auto ringPoint = ringPoints[i];
+                        group->addPoint(ringPoint->PointIndex, ringPoint->ClusterIndex, ringPoint->Cost);
+                        nGroupedPoints++;
                     }
                 }
             }
