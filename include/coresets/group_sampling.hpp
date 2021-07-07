@@ -78,6 +78,7 @@ namespace coresets
         void addPoint(size_t point, size_t cluster, double cost)
         {
             points.push_back(std::make_shared<ClusteredPoint>(point, cluster, cost));
+            printf("            + Adding point %ld to group\n", point);
         }
 
         const std::vector<std::shared_ptr<ClusteredPoint>> &
@@ -241,6 +242,12 @@ namespace coresets
             return this->points;
         }
 
+        size_t
+        countPoints() const
+        {
+            return this->points.size();
+        }
+
     private:
         /**
          * The points assigned to this ring.
@@ -318,7 +325,7 @@ namespace coresets
         }
 
         /**
-         * @brief Sums the costs of all points in captured by all rings for a given range i.e., cost(R_l) = sum_{p in R_l} cost(p, A)
+         * @brief Sums the costs of all points in captured by all clusters for a given ring range i.e., cost(R_l) = sum_{p in R_l} cost(p, A)
          * @param ringRangeValue The ring range value i.e. l
          */
         double
@@ -334,6 +341,25 @@ namespace coresets
                 }
             }
             return sum;
+        }
+
+        /**
+         * @brief Counts the number of points captured by a given ring range l i.e., |R_l|
+         * @param ringRangeValue The ring range value i.e. l
+         */
+        size_t
+        countRingPoints(int ringRangeValue) const
+        {
+            size_t count = 0;
+            for (size_t i = 0; i < rings.size(); i++)
+            {
+                auto ring = rings[i];
+                if (ring->RangeValue == ringRangeValue)
+                {
+                    count += ring->countPoints();
+                }
+            }
+            return count;
         }
 
         size_t

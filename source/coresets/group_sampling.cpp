@@ -189,11 +189,11 @@ GroupSampling::makeGroups(const clustering::ClusterAssignmentList &clusters, con
 {
     auto groups = std::make_shared<GroupSet>();
     auto k = static_cast<double>(clusters.getNumberOfClusters());
-    auto clusterCosts = clusters.calcAverageClusterCosts();
     for (int l = rings->RangeStart; l <= rings->RangeEnd; l++)
     {
         double ringCost = rings->calcRingCost(l);
-        printf("\n\nRing cost for l=%d is %0.4f\n", l, ringCost);
+        size_t nRingPoints = rings->countRingPoints(l);
+        printf("\n\nRing l=%d   -  cost(R_l) = %0.4f   -   |R_l| = %ld\n", l, ringCost, nRingPoints);
         
         for (size_t j = 0; j < numberOfGroups; j++)
         {
@@ -201,20 +201,19 @@ GroupSampling::makeGroups(const clustering::ClusterAssignmentList &clusters, con
             double lowerBound = 1/k * pow(2, -jDouble    ) * ringCost;
             double upperBound = 1/k * pow(2, -jDouble + 1) * ringCost;
 
-            printf("   Group j=%ld -> lowerBoundCost=%0.4f  upperBoundCost=%0.4f\n", j, lowerBound, upperBound);
+            printf("\n   Group j=%ld    lowerBoundCost=%0.4f   upperBoundCost=%0.4f\n", j, lowerBound, upperBound);
 
             for (size_t c = 0; c < k; c++)
             {
-                auto clusterCost = (*clusterCosts)[c];
+                auto ring = rings->find(c, l);
+                auto clusterCost = ring->getTotalCost();
+                auto ringPoints = ring->getPoints();
                 
-                printf("        Cluster C_%ld: cost(C_%ld)=%0.4f\n", c, c, clusterCost);
+                printf("        Cluster i=%ld  - cost(R_{l,i}) = %0.4f     |R_{l,i}| = %ld\n", c, clusterCost, ring->countPoints());
                 if (clusterCost >= lowerBound && clusterCost < upperBound)
                 {
                     // Points which belong to cluster `c` and ring `l`
-                    auto ring = rings->find(c, l);
-                    auto ringPoints = ring->getPoints();
-
-                    printf("            Cluster C_%ld has %ld ring points for range %d\n", c, ringPoints.size(), l);
+                    printf("            Adding %ld points to G[l=%d, j=%ld]\n", ringPoints.size(), l, j);
 
                     if (ringPoints.size() > 0)
                     {
