@@ -33,7 +33,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     }
 
     auto rings = this->makeRings(clusterAssignments);
-   
+
     addShortfallPointsToCoreset(clusterAssignments, rings, coresetPoints);
 
     addOvershootPointsToCoreset(data, rings, coresetPoints);
@@ -111,19 +111,17 @@ GroupSampling::makeRings(const clustering::ClusterAssignmentList &clusterAssignm
 
             if (costOfPoint < innerMostRingCost)
             {
-                // Step 5: Handle points below l's lower range i.e. l<log⁡(1/β)
-                auto ring = std::make_shared<ExternalRing>(p, c, costOfPoint, innerMostRingCost, true);
-                rings->add(ring);
+                // Track shortfall points: below l's lower range i.e. l<log⁡(1/β)
+                rings->addShortfallPoint(p, c, costOfPoint, innerMostRingCost);
             }
             else if (costOfPoint > outerMostRingCost)
             {
-                // Step 6: Handle points above l's upper range i.e., l>log⁡(β)
-                auto ring = std::make_shared<ExternalRing>(p, c, costOfPoint, outerMostRingCost, false);
-                rings->add(ring);
+                // Track overshoot points: above l's upper range i.e., l>log⁡(β)
+                rings->addOvershootPoint(p, c, costOfPoint, innerMostRingCost);
             }
             else
             {
-                throw std::logic_error("Point does not belong to internal nor external ring. Program logic error.");
+                throw std::logic_error("Point should either belong to a ring or be ringless.");
             }
         }
     }
@@ -131,28 +129,28 @@ GroupSampling::makeRings(const clustering::ClusterAssignmentList &clusterAssignm
     return rings;
 }
 
-void GroupSampling::addShortfallPointsToCoreset(const clustering::ClusterAssignmentList &clusters, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints)
+void GroupSampling::addShortfallPointsToCoreset(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints)
 {
-    // Step 5: Handle points that are below the lowest ring range i.e. l < log(1/beta).
-    // These are called inner-most external rings. Since these points are very close to
-    // their corresponding cluster centers, we add their centers to the coreset weighted
-    // by the number of points in the inner-most external ring of that cluster.
+    // Handle points whose costs are below the lowest ring range i.e. l < log(1/beta).
+    // These are called shortfall points because they fall short of being captured by the
+    // inner-most ring. These points are snapped to the center of the assigned cluster by
+    // adding the centers to the coreset weighted by the number of shortfall points of
+    // that cluster.
     auto k = clusters.getNumberOfClusters();
 
     for (size_t c = 0; c < k; c++)
     {
-        // The number of points in the inner-most external ring for cluster `c`
-        auto innerRingPointClusterCount = rings->getNumberOfInnerRingPoints(c);
+        // The number of shortfall points for cluster `c`
+        auto nShortfallPoints = rings->getNumberOfShortfallPoints(c);
 
-        if (innerRingPointClusterCount == 0)
+        if (nShortfallPoints == 0)
         {
-            // Not all clusters may have points in the inner-most external ring, so
-            // do not add center of the curresponding cluster `c` to the coreset.
+            // Not all clusters may have shortfall points so skip those.
             continue;
         }
 
         // The weight of the coreset point for the center of cluster `c`
-        double weight = static_cast<double>(innerRingPointClusterCount);
+        double weight = static_cast<double>(nShortfallPoints);
 
         // Add center to the coreset.
         printf("Add center of cluster %ld with weight %0.2f to coreset.\n", c, weight);
@@ -162,26 +160,7 @@ void GroupSampling::addShortfallPointsToCoreset(const clustering::ClusterAssignm
 
 void GroupSampling::addOvershootPointsToCoreset(const blaze::DynamicMatrix<double> &data, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints)
 {
-    // First, make a matrix that consists of points in the dataset that are captured by the outer-most ring.
-    std::vector<size_t> pointIndicesOutsideAllRings = rings->getPointsOutsideAllRings();
-    auto pPrimeSize = pointIndicesOutsideAllRings.size();
-    if (pPrimeSize > 0)
-    {
-        blaze::DynamicMatrix<double> pointsOutsideAllRings(pPrimeSize, data.columns());
-        std::cout << "Points outside all rings = [ ";
-        for (size_t i = 0; i < pPrimeSize; i++)
-        {
-            size_t p = pointIndicesOutsideAllRings[i];
-            blaze::row(pointsOutsideAllRings, i) = blaze::row(data, p);
-            std::cout << p << ", ";
-        }
-        std::cout << "]\n";
-        
-        std::cout << "Points: \n" << pointsOutsideAllRings << "\n";
-
-        // TODO: Run sensitivity sampling.
-        // TODO: Add results of Sensitivity Sampling into coresetPoints
-    }
+    // TODO: Implement this!
 }
 
 std::shared_ptr<GroupSet>

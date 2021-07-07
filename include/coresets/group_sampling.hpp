@@ -78,7 +78,6 @@ namespace coresets
         void addPoint(size_t point, size_t cluster, double cost)
         {
             points.push_back(std::make_shared<ClusteredPoint>(point, cluster, cost));
-            printf("            + Adding point %ld to group\n", point);
         }
 
         const std::vector<std::shared_ptr<ClusteredPoint>> &
@@ -153,19 +152,23 @@ namespace coresets
         }
     };
 
-    struct ExternalRing
+    /**
+     * Represents a point that is not captured by any ring. 
+     */
+    struct RinglessPoint
     {
         const size_t PointIndex;
         const size_t ClusterIndex;
         const double PointCost;
         const double CostBoundary;
-        const bool IsInner;
+        const bool IsOvershoot;
 
-        ExternalRing(size_t postIndex, size_t clusterIndex, double pointCost, double costBoundary, bool isInnerRing) : PointIndex(postIndex), ClusterIndex(clusterIndex), PointCost(pointCost), CostBoundary(costBoundary), IsInner(isInnerRing)
+        RinglessPoint(size_t postIndex, size_t clusterIndex, double pointCost, double costBoundary, bool isOvershoot) :
+             PointIndex(postIndex), ClusterIndex(clusterIndex), PointCost(pointCost), CostBoundary(costBoundary), IsOvershoot(isOvershoot)
         {
         }
 
-        ExternalRing &operator=(const ExternalRing &) = delete; // Disallow assignment
+        RinglessPoint &operator=(const RinglessPoint &) = delete; // Disallow assignment
     };
 
     class Ring
@@ -210,7 +213,7 @@ namespace coresets
         {
             if (isCostWithinBounds(cost))
             {
-                printf("Internal Point %3ld with cost(p, A) = %0.4f  ->  R[%2d, %ld]  [%0.4f, %0.4f) \n",
+                printf("Ring Point %3ld with cost(p, A) = %0.4f  ->  R[%2d, %ld]  [%0.4f, %0.4f) \n",
                        pointIndex, cost, RangeValue, ClusterIndex, LowerBoundCost, UpperBoundCost);
 
                 points.push_back(std::make_shared<ClusteredPoint>(pointIndex, ClusterIndex, cost));
@@ -266,8 +269,9 @@ namespace coresets
 
     class RingSet
     {
-        std::vector<std::shared_ptr<ExternalRing>> externalRings;
         std::vector<std::shared_ptr<Ring>> rings;
+        std::vector<std::shared_ptr<RinglessPoint>> overshootPoints;
+        std::vector<std::shared_ptr<RinglessPoint>> shortfallPoints;
 
     public:
         const int RangeStart;
@@ -305,23 +309,24 @@ namespace coresets
             return ring;
         }
 
-        void add(const std::shared_ptr<ExternalRing> ring)
+        void addOvershootPoint(size_t pointIndex, size_t clusterIndex, double cost, double costBoundary)
         {
-            externalRings.push_back(ring);
+            printf("Overshoot Point %3ld with cost(p, A) = %0.4f cluster(p)=%ld -> the cost(p, A) ",
+                   pointIndex, cost, clusterIndex);
+            printf("is above the cost range of outer most ring (%.4f)\n", costBoundary);
 
-            printf("External Point %3ld with cost(p, A) = %0.4f cluster(p)=%ld -> the cost(p, A) ",
-                   ring->PointIndex, ring->PointCost, ring->ClusterIndex);
+            auto point = std::make_shared<RinglessPoint>(pointIndex, clusterIndex, cost, costBoundary, true);
+            overshootPoints.push_back(point);
+        }
 
-            if (ring->IsInner)
-            {
-                printf("falls below the cost range of inner most ring (%.4f)", ring->CostBoundary);
-            }
-            else
-            {
-                printf("is above the cost range of outer most ring (%.4f)", ring->CostBoundary);
-            }
+        void addShortfallPoint(size_t pointIndex, size_t clusterIndex, double cost, double costBoundary)
+        {
+            printf("Shortfall Point %3ld with cost(p, A) = %0.4f cluster(p)=%ld -> the cost(p, A) ",
+                   pointIndex, cost, clusterIndex);
+            printf("falls below the cost range of inner most ring (%.4f)\n", costBoundary);
 
-            printf("\n");
+            auto point = std::make_shared<RinglessPoint>(pointIndex, clusterIndex, cost, costBoundary, false);
+            shortfallPoints.push_back(point);
         }
 
         /**
@@ -362,35 +367,23 @@ namespace coresets
             return count;
         }
 
+        /**
+         * @brief Returns the number of shortfall points in a given cluster.
+         * @param clusterIndex The cluster for which to search for shortfall points.
+         */
         size_t
-        getNumberOfInnerRingPoints(size_t clusterIndex)
+        getNumberOfShortfallPoints(size_t clusterIndex) const
         {
             size_t count = 0;
-            for (size_t i = 0; i < externalRings.size(); i++)
+            for (size_t i = 0; i < shortfallPoints.size(); i++)
             {
-                auto ring = externalRings[i];
-                if (ring->ClusterIndex == clusterIndex && ring->IsInner)
+                auto point = shortfallPoints[i];
+                if (point->ClusterIndex == clusterIndex)
                 {
                     count++;
                 }
             }
             return count;
-        }
-
-        std::vector<size_t>
-        getPointsOutsideAllRings() const
-        {
-            std::vector<size_t> pointsOutsideAllRings;
-            for (size_t i = 0; i < externalRings.size(); i++)
-            {
-                auto ring = externalRings[i];
-                if (ring->IsInner == false)
-                {
-                    pointsOutsideAllRings.push_back(ring->PointIndex);
-                }
-            }
-
-            return pointsOutsideAllRings;
         }
     };
 
