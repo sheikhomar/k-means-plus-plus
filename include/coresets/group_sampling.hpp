@@ -161,10 +161,10 @@ namespace coresets
         const size_t ClusterIndex;
         const double PointCost;
         const double CostBoundary;
-        const bool IsOvershoot;
+        const bool IsOvershot;
 
-        RinglessPoint(size_t postIndex, size_t clusterIndex, double pointCost, double costBoundary, bool isOvershoot) :
-             PointIndex(postIndex), ClusterIndex(clusterIndex), PointCost(pointCost), CostBoundary(costBoundary), IsOvershoot(isOvershoot)
+        RinglessPoint(size_t postIndex, size_t clusterIndex, double pointCost, double costBoundary, bool isOvershot) :
+             PointIndex(postIndex), ClusterIndex(clusterIndex), PointCost(pointCost), CostBoundary(costBoundary), IsOvershot(isOvershot)
         {
         }
 
@@ -270,7 +270,7 @@ namespace coresets
     class RingSet
     {
         std::vector<std::shared_ptr<Ring>> rings;
-        std::vector<std::shared_ptr<RinglessPoint>> overshootPoints;
+        std::vector<std::shared_ptr<RinglessPoint>> overshotPoints;
         std::vector<std::shared_ptr<RinglessPoint>> shortfallPoints;
 
     public:
@@ -309,14 +309,14 @@ namespace coresets
             return ring;
         }
 
-        void addOvershootPoint(size_t pointIndex, size_t clusterIndex, double cost, double costBoundary)
+        void addOvershotPoint(size_t pointIndex, size_t clusterIndex, double cost, double costBoundary)
         {
-            printf("Overshoot Point %3ld with cost(p, A) = %0.4f cluster(p)=%ld -> the cost(p, A) ",
+            printf("Overshot Point %3ld with cost(p, A) = %0.4f cluster(p)=%ld -> the cost(p, A) ",
                    pointIndex, cost, clusterIndex);
             printf("is above the cost range of outer most ring (%.4f)\n", costBoundary);
 
             auto point = std::make_shared<RinglessPoint>(pointIndex, clusterIndex, cost, costBoundary, true);
-            overshootPoints.push_back(point);
+            overshotPoints.push_back(point);
         }
 
         void addShortfallPoint(size_t pointIndex, size_t clusterIndex, double cost, double costBoundary)
@@ -385,6 +385,52 @@ namespace coresets
             }
             return count;
         }
+
+        /**
+         * @brief Computes the cost of overshot points.
+         * @param clusterIndex If -1 then compute the costs for all points. If non-negative, computes the cost for all points in the given cluster.
+         */
+        double
+        computeCostOfOvershotPoints(int clusterIndex = -1) const
+        {
+            double cost = 0.0;
+            for (size_t i = 0; i < this->overshotPoints.size(); i++)
+            {
+                auto point = this->overshotPoints.at(i);
+                
+                if (clusterIndex == -1 || (clusterIndex >= 0 && point->ClusterIndex == clusterIndex))
+                {
+                    cost += point->PointCost;
+                }
+            }
+            
+            return cost;
+        }
+
+        /**
+         * @brief Computes the cost of  points in a given cluster.
+         * @param clusterIndex The cluster for which to compute cost.
+         */
+        double
+        computeCostOfPoints(size_t clusterIndex) const
+        {
+            return computeCostOfPoints(static_cast<int>(clusterIndex));
+        }
+
+        std::vector<std::shared_ptr<RinglessPoint>>
+        getOvershotPoints(size_t clusterIndex) const
+        {
+            std::vector<std::shared_ptr<RinglessPoint>> filteredPoints;
+            for (size_t i = 0; i < this->overshotPoints.size(); i++)
+            {
+                auto point = this->overshotPoints.at(i);
+                if (point->ClusterIndex == clusterIndex)
+                {
+                    filteredPoints.push_back(point);
+                }
+            }
+            return filteredPoints;
+        }
     };
 
     class GroupSampling
@@ -407,9 +453,9 @@ namespace coresets
         void addShortfallPointsToCoreset(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints);
 
         /**
-         * @brief Add points outside doughnuts i.e., points that are far from cluster centers and are not captured by any rings.
+         * @brief Group overshot points i.e., points that are far from cluster centers and are not captured by any rings.
          */
-        void addOvershootPointsToCoreset(const blaze::DynamicMatrix<double> &data, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints);
+        void groupOvershotPoints(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, std::shared_ptr<GroupSet> groups);
 
         std::shared_ptr<GroupSet>
         makeGroups(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, const size_t numberOfGroups);

@@ -36,9 +36,10 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
 
     addShortfallPointsToCoreset(clusterAssignments, rings, coresetPoints);
 
-    addOvershootPointsToCoreset(data, rings, coresetPoints);
-
     auto groups = makeGroups(clusterAssignments, rings, 4);
+
+    groupOvershotPoints(clusterAssignments, rings, groups);
+    
     auto totalCost = clusterAssignments.getTotalCost();
     for (size_t i = 0; i < groups->size(); i++)
     {
@@ -116,8 +117,8 @@ GroupSampling::makeRings(const clustering::ClusterAssignmentList &clusterAssignm
             }
             else if (costOfPoint > outerMostRingCost)
             {
-                // Track overshoot points: above l's upper range i.e., l>log⁡(β)
-                rings->addOvershootPoint(p, c, costOfPoint, innerMostRingCost);
+                // Track overshot points: above l's upper range i.e., l>log⁡(β)
+                rings->addOvershotPoint(p, c, costOfPoint, innerMostRingCost);
             }
             else
             {
@@ -158,9 +159,63 @@ void GroupSampling::addShortfallPointsToCoreset(const clustering::ClusterAssignm
     }
 }
 
-void GroupSampling::addOvershootPointsToCoreset(const blaze::DynamicMatrix<double> &data, std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints)
+void GroupSampling::groupOvershotPoints(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, std::shared_ptr<GroupSet> groups)
 {
-    // TODO: Implement this!
+    size_t numberOfGroups = 5;
+    auto k = clusters.getNumberOfClusters();
+    double kDouble = static_cast<double>(k);
+    double totalCost = rings->computeCostOfOvershotPoints();
+
+    printf("\n\nGrouping overshot points, cost(O) = %0.5f\n", totalCost);
+    
+    for (size_t c = 0; c < k; c++)
+    {
+        double clusterCost = rings->computeCostOfOvershotPoints(c);
+        auto points = rings->getOvershotPoints(c);
+        
+        printf("    Cluster i=%ld  - cost(C_i ⋂ O) = %0.4f     |C_i ⋂ O| = %ld\n", c, clusterCost, points.size());
+
+        if (points.size() == 0)
+        {
+            // If no overshot points in the current cluster then go to next cluster.
+            continue;
+        }
+
+        for (size_t j = 0; j < numberOfGroups; j++)
+        {
+            double jDouble = static_cast<double>(j);
+            double lowerBound = 1/kDouble * pow(2, -jDouble    ) * totalCost;
+            double upperBound = 1/kDouble * pow(2, -jDouble + 1) * totalCost;
+            bool shouldAddPointsIntoGroup = false;
+
+            if (j == 0)
+            {
+                // Group 0 has no upper bound. Notice this can be written as two-liners,
+                // but is expanded to make it easier to read the code.
+                shouldAddPointsIntoGroup = clusterCost >= lowerBound; 
+                printf("\n      Group j=%ld    lowerBoundCost=%0.4f\n", j, lowerBound);
+            }
+            else
+            {
+                shouldAddPointsIntoGroup = clusterCost >= lowerBound && clusterCost < upperBound;
+                printf("\n      Group j=%ld    lowerBoundCost=%0.4f   upperBoundCost=%0.4f\n", j, lowerBound, upperBound);
+            }
+
+            if (shouldAddPointsIntoGroup)
+            {
+                auto l = std::numeric_limits<int>().max();
+                auto group = groups->create(j, l, lowerBound, upperBound);
+                
+                printf("            Adding %ld points to G[l=%d, j=%ld]\n", points.size(), l, j);
+
+                for (size_t i = 0; i < points.size(); i++)
+                {
+                    auto point = points[i];
+                    group->addPoint(point->PointIndex, point->ClusterIndex, point->PointCost);
+                }
+            }
+        }
+    }
 }
 
 std::shared_ptr<GroupSet>
