@@ -125,8 +125,15 @@ namespace coresets
     class GroupSet
     {
         std::vector<std::shared_ptr<Group>> groups;
+        
 
     public:
+        const size_t GroupRangeSize;
+
+        GroupSet(size_t groupRangeSize) : GroupRangeSize(groupRangeSize)
+        {
+        }
+
         GroupSet &operator=(const GroupSet &) = delete; // Disallow assignment
 
         std::shared_ptr<Group> create(size_t rangeValue, int ringRangeValue, double lowerBoundCost, double upperBoundCost)
@@ -473,8 +480,10 @@ namespace coresets
          */
         void groupOvershotPoints(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, std::shared_ptr<GroupSet> groups);
 
-        std::shared_ptr<GroupSet>
-        makeGroups(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, const size_t numberOfGroups);
+        /**
+         * @brief Group points arranged in rings.
+         */
+        void groupRingPoints(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, std::shared_ptr<GroupSet> groups);
 
         void printPythonCodeForVisualisation(std::shared_ptr<clustering::ClusteringResult> result, std::shared_ptr<RingSet> rings);
     };

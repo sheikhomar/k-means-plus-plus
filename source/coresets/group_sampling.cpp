@@ -12,10 +12,11 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     const uint kPrime = 3;
     const uint k = kPrime; // TODO: Should be k = 2 * kPrime;
     const uint T = 20;     // T is the number of sampled points. It is hyperparam. Usually T=200*k
+    const size_t groupRangeSize = 5; // H is the number of group range
     const size_t n = data.rows();
     const size_t d = data.columns();
+
     auto coreset = std::make_shared<Coreset>();
-    std::vector<WeightedPoint> coresetPoints;
 
     // Step 1: Run k-means++ to get the initial solution A.
     clustering::KMeans kMeansAlg(k);
@@ -24,19 +25,13 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
 
     auto clusterAssignments = result->getClusterAssignments();
 
-    // Step 2: Compute the average cost for each cluster.
-    auto averageClusterCosts = clusterAssignments.calcAverageClusterCosts();
-
-    for (size_t c = 0; c < k; c++)
-    {
-        printf("Cluster %ld's average cost is %.4f\n", c, (*averageClusterCosts)[c]);
-    }
-
     auto rings = this->makeRings(clusterAssignments);
+    
+    auto groups = std::make_shared<GroupSet>(groupRangeSize);
 
     addShortfallPointsToCoreset(clusterAssignments, rings, coreset);
 
-    auto groups = makeGroups(clusterAssignments, rings, 4);
+    groupRingPoints(clusterAssignments, rings, groups);
 
     groupOvershotPoints(clusterAssignments, rings, groups);
     
@@ -248,10 +243,8 @@ void GroupSampling::groupOvershotPoints(const clustering::ClusterAssignmentList 
     }
 }
 
-std::shared_ptr<GroupSet>
-GroupSampling::makeGroups(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, const size_t numberOfGroups)
+void GroupSampling::groupRingPoints(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, std::shared_ptr<GroupSet> groups)
 {
-    auto groups = std::make_shared<GroupSet>();
     auto k = static_cast<double>(clusters.getNumberOfClusters());
     for (int l = rings->RangeStart; l <= rings->RangeEnd; l++)
     {
@@ -274,7 +267,7 @@ GroupSampling::makeGroups(const clustering::ClusterAssignmentList &clusters, con
                 continue;
             }
 
-            for (size_t j = 0; j < numberOfGroups; j++)
+            for (size_t j = 0; j < groups->GroupRangeSize; j++)
             {
                 double jDouble = static_cast<double>(j);
                 double lowerBound = 1/k * pow(2, -jDouble    ) * ringCost;
@@ -319,8 +312,6 @@ GroupSampling::makeGroups(const clustering::ClusterAssignmentList &clusters, con
         assert(nRingPointsForAllClusters == nGroupedPoints);
 
     }
-
-    return groups;
 }
 
 void
