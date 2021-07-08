@@ -10,8 +10,8 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
 {
     utils::Random random;
     const uint kPrime = 3;
-    const uint k = kPrime; // TODO: Should be k = 2 * kPrime;
-    const uint T = 20;     // T is the number of sampled points. It is hyperparam. Usually T=200*k
+    const uint k = kPrime;           // TODO: Should be k = 2 * kPrime;
+    const uint T = 20;               // T is the number of sampled points. It is hyperparam. Usually T=200*k
     const size_t groupRangeSize = 5; // H is the number of group range
     const size_t n = data.rows();
     const size_t d = data.columns();
@@ -26,7 +26,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     auto clusterAssignments = result->getClusterAssignments();
 
     auto rings = this->makeRings(clusterAssignments);
-    
+
     auto groups = std::make_shared<GroupSet>(groupRangeSize);
 
     addShortfallPointsToCoreset(clusterAssignments, rings, coreset);
@@ -34,7 +34,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     groupRingPoints(clusterAssignments, rings, groups);
 
     groupOvershotPoints(clusterAssignments, rings, groups);
-    
+
     printf("\n\nSampling from groups...\n");
 
     size_t minSamplingSize = 1;
@@ -43,7 +43,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     printf("  Minimum size before sampling from any group is %ld...\n", minSamplingSize);
     printf("  cost(A) = %0.5f...\n", totalCost);
     printf("  T = %ld...\n", T);
-    
+
     for (size_t m = 0; m < groups->size(); m++)
     {
         auto group = groups->at(m);
@@ -53,8 +53,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
         auto numSamples = T * normalizedGroupCost;
 
         printf("\n    Group m=%ld:   |G_m|=%2ld   cost(G_m)=%2.4f   cost(G_m)/cost(A)=%0.4f   T_m=%0.5f \n",
-            m, groupPoints.size(), group->calcTotalCost(), normalizedGroupCost, numSamples
-        );
+               m, groupPoints.size(), group->calcTotalCost(), normalizedGroupCost, numSamples);
 
         if (numSamples < minSamplingSize)
         {
@@ -69,7 +68,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
                     printf("            Added center c_%ld with weight %0.2f to the coreset\n", c, weight);
                 }
             }
-        } 
+        }
         else
         {
             size_t numSamplesInt = static_cast<size_t>(ceil(numSamples));
@@ -79,10 +78,10 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
             for (size_t i = 0; i < sampledPoints.size(); i++)
             {
                 auto sampledPoint = sampledPoints[i];
-                auto weight = groupCost / (numSamples*sampledPoint->Cost);
+                auto weight = groupCost / (numSamples * sampledPoint->Cost);
                 coreset->addPoint(sampledPoint->PointIndex, weight);
                 printf("          Adding point %ld - cost(p,A)=%0.5f - with weight %0.3f to the coreset\n",
-                        sampledPoint->PointIndex, sampledPoint->Cost, weight);
+                       sampledPoint->PointIndex, sampledPoint->Cost, weight);
             }
         }
     }
@@ -119,7 +118,7 @@ GroupSampling::makeRings(const clustering::ClusterAssignmentList &clusterAssignm
         {
             auto ring = rings->findOrCreate(c, l, averageClusterCost);
 
-            // Add point if cost(p, A) is within bounds i.e. between Δ_c*2^l and Δ_c*2^(l+1) 
+            // Add point if cost(p, A) is within bounds i.e. between Δ_c*2^l and Δ_c*2^(l+1)
             if (ring->tryAddPoint(p, costOfPoint))
             {
                 pointPutInRing = true;
@@ -192,12 +191,12 @@ void GroupSampling::groupOvershotPoints(const clustering::ClusterAssignmentList 
     double totalCost = rings->computeCostOfOvershotPoints();
 
     printf("\n\nGrouping overshot points, cost(O) = %0.5f\n", totalCost);
-    
+
     for (size_t c = 0; c < k; c++)
     {
         double clusterCost = rings->computeCostOfOvershotPoints(c);
         auto points = rings->getOvershotPoints(c);
-        
+
         printf("    Cluster i=%ld  - cost(C_i ⋂ O) = %0.4f     |C_i ⋂ O| = %ld\n", c, clusterCost, points.size());
 
         if (points.size() == 0)
@@ -209,15 +208,15 @@ void GroupSampling::groupOvershotPoints(const clustering::ClusterAssignmentList 
         for (size_t j = 0; j < numberOfGroups; j++)
         {
             double jDouble = static_cast<double>(j);
-            double lowerBound = 1/kDouble * pow(2, -jDouble    ) * totalCost;
-            double upperBound = 1/kDouble * pow(2, -jDouble + 1) * totalCost;
+            double lowerBound = 1 / kDouble * pow(2, -jDouble) * totalCost;
+            double upperBound = 1 / kDouble * pow(2, -jDouble + 1) * totalCost;
             bool shouldAddPointsIntoGroup = false;
 
             if (j == 0)
             {
                 // Group 0 has no upper bound. Notice this can be written as two-liners,
                 // but is expanded to make it easier to read the code.
-                shouldAddPointsIntoGroup = clusterCost >= lowerBound; 
+                shouldAddPointsIntoGroup = clusterCost >= lowerBound;
                 printf("\n      Group j=%ld    lowerBoundCost=%0.4f\n", j, lowerBound);
             }
             else
@@ -230,7 +229,7 @@ void GroupSampling::groupOvershotPoints(const clustering::ClusterAssignmentList 
             {
                 auto l = std::numeric_limits<int>().max();
                 auto group = groups->create(j, l, lowerBound, upperBound);
-                
+
                 printf("            Adding %ld points to G[l=%d, j=%ld]\n", points.size(), l, j);
 
                 for (size_t i = 0; i < points.size(); i++)
@@ -252,7 +251,7 @@ void GroupSampling::groupRingPoints(const clustering::ClusterAssignmentList &clu
         size_t nRingPointsForAllClusters = rings->countRingPoints(l);
         size_t nGroupedPoints = 0;
         printf("\n\nRing l=%d   -  cost(R_l) = %0.4f   -   |R_l| = %ld\n", l, ringCost, nRingPointsForAllClusters);
-        
+
         for (size_t c = 0; c < k; c++)
         {
             auto ring = rings->find(c, l);
@@ -270,15 +269,15 @@ void GroupSampling::groupRingPoints(const clustering::ClusterAssignmentList &clu
             for (size_t j = 0; j < groups->GroupRangeSize; j++)
             {
                 double jDouble = static_cast<double>(j);
-                double lowerBound = 1/k * pow(2, -jDouble    ) * ringCost;
-                double upperBound = 1/k * pow(2, -jDouble + 1) * ringCost;
+                double lowerBound = 1 / k * pow(2, -jDouble) * ringCost;
+                double upperBound = 1 / k * pow(2, -jDouble + 1) * ringCost;
                 bool shouldAddPointsIntoGroup = false;
 
                 if (j == 0)
                 {
                     // Group 0 has no upper bound. Notice this can be written as two-liners,
                     // but is expanded to make it easier to read the code.
-                    shouldAddPointsIntoGroup = clusterCost >= lowerBound; 
+                    shouldAddPointsIntoGroup = clusterCost >= lowerBound;
                     printf("\n      Group j=%ld    lowerBoundCost=%0.4f\n", j, lowerBound, upperBound);
                 }
                 else
@@ -286,7 +285,7 @@ void GroupSampling::groupRingPoints(const clustering::ClusterAssignmentList &clu
                     shouldAddPointsIntoGroup = clusterCost >= lowerBound && clusterCost < upperBound;
                     printf("\n      Group j=%ld    lowerBoundCost=%0.4f   upperBoundCost=%0.4f\n", j, lowerBound, upperBound);
                 }
-                
+
                 if (shouldAddPointsIntoGroup)
                 {
                     // Points which belong to cluster `c` and ring `l`
@@ -307,15 +306,13 @@ void GroupSampling::groupRingPoints(const clustering::ClusterAssignmentList &clu
         {
             printf("Not all points in ring l=%d are put in a group. ", l);
             printf("Number of points in the ring is %ld but only %ld points are grouped.\n",
-                nRingPointsForAllClusters, nGroupedPoints);
+                   nRingPointsForAllClusters, nGroupedPoints);
         }
         assert(nRingPointsForAllClusters == nGroupedPoints);
-
     }
 }
 
-void
-GroupSampling::printPythonCodeForVisualisation(std::shared_ptr<clustering::ClusteringResult> result, std::shared_ptr<RingSet> rings)
+void GroupSampling::printPythonCodeForVisualisation(std::shared_ptr<clustering::ClusteringResult> result, std::shared_ptr<RingSet> rings)
 {
     auto clusterAssignments = result->getClusterAssignments();
     auto centers = result->getCentroids();
@@ -341,7 +338,7 @@ GroupSampling::printPythonCodeForVisualisation(std::shared_ptr<clustering::Clust
         printf("],\n");
     }
     printf("])\n");
-    
+
     printf("ring_ranges = [");
     for (int l = rings->RangeStart; l <= rings->RangeEnd; l++)
     {
@@ -357,13 +354,11 @@ GroupSampling::printPythonCodeForVisualisation(std::shared_ptr<clustering::Clust
         {
             auto ring = rings->find(c, l);
             printf("%0.5f, ", ring->getLowerBoundCost());
-
         }
         printf("],\n");
     }
     printf("])\n");
 
-    
     printf("rings_upper_bounds = np.array([\n");
     for (size_t c = 0; c < k; c++)
     {
@@ -372,7 +367,6 @@ GroupSampling::printPythonCodeForVisualisation(std::shared_ptr<clustering::Clust
         {
             auto ring = rings->find(c, l);
             printf("%0.5f, ", ring->getUpperBoundCost());
-
         }
         printf("],\n");
     }

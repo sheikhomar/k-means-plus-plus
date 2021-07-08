@@ -125,7 +125,6 @@ namespace coresets
     class GroupSet
     {
         std::vector<std::shared_ptr<Group>> groups;
-        
 
     public:
         const size_t GroupRangeSize;
