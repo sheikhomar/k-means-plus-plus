@@ -136,4 +136,15 @@ int main() {
   size_t H = 4; // Group range size
   coresets::GroupSampling gs(k, T, beta, H, T_s);
   gs.run(data);
+
+  // coresets::SensitivitySampling sensitivitySampling(k, T);
+  // auto coresetBySens = sensitivitySampling.run(data);
+
+  // for (size_t i = 0; i < coresetBySens->size(); i++)
+  // {
+  //   auto point = coresetBySens->at(i);
+  //   // if (point->IsCenter)
+  //   printf("Point %ld weight %0.4f\n", point->Index, point->Weight);
+  // }
+  
 }

@@ -47,9 +47,15 @@ namespace coresets
         void addCenter(size_t clusterIndex, double weight);
 
         /**
+         * Returns the coreset point at the given index.
+         */
+        std::shared_ptr<WeightedPoint>
+        at(size_t index) const;
+
+        /**
          * @brief Returns the number of points in this coreset.
          */
         size_t
-        size();
+        size() const;
     };
 }

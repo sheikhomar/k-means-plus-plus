@@ -18,8 +18,14 @@ void Coreset::addCenter(size_t clusterIndex, double weight)
     this->points.push_back(coresetPoint);
 }
 
+std::shared_ptr<WeightedPoint>
+Coreset::at(size_t index) const
+{
+    return this->points[index];
+}
+
 size_t
-Coreset::size()
+Coreset::size() const
 {
     return this->points.size();
 }
