@@ -98,6 +98,23 @@ namespace coresets
             return sum;
         }
 
+        /**
+         * @brief Counts the number of points in the given cluster.
+         */
+        size_t
+        countPointsInCluster(size_t clusterIndex) const
+        {
+            size_t count = 0;
+            for (size_t i = 0; i < points.size(); i++)
+            {
+                if (points[i]->ClusterIndex == clusterIndex)
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+
     private:
         /**
          * The points assigned to this group.
@@ -163,8 +180,7 @@ namespace coresets
         const double CostBoundary;
         const bool IsOvershot;
 
-        RinglessPoint(size_t postIndex, size_t clusterIndex, double pointCost, double costBoundary, bool isOvershot) :
-             PointIndex(postIndex), ClusterIndex(clusterIndex), PointCost(pointCost), CostBoundary(costBoundary), IsOvershot(isOvershot)
+        RinglessPoint(size_t postIndex, size_t clusterIndex, double pointCost, double costBoundary, bool isOvershot) : PointIndex(postIndex), ClusterIndex(clusterIndex), PointCost(pointCost), CostBoundary(costBoundary), IsOvershot(isOvershot)
         {
         }
 
@@ -397,13 +413,13 @@ namespace coresets
             for (size_t i = 0; i < this->overshotPoints.size(); i++)
             {
                 auto point = this->overshotPoints.at(i);
-                
+
                 if (clusterIndex == -1 || (clusterIndex >= 0 && point->ClusterIndex == clusterIndex))
                 {
                     cost += point->PointCost;
                 }
             }
-            
+
             return cost;
         }
 

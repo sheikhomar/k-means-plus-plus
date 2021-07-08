@@ -64,7 +64,16 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
         if (numSamples < minSamplingSize)
         {
             printf("        Will not sample because T_m is below threshold...\n");
-
+            for (size_t c = 0; c < k; c++)
+            {
+                auto nPointsInCluster = group->countPointsInCluster(c);
+                if (nPointsInCluster > 0)
+                {
+                    double weight = static_cast<double>(nPointsInCluster);
+                    coresetPoints.push_back(WeightedPoint(c, weight, true));
+                    printf("            Added center c_%ld with weight %0.2f to the coreset\n", c, weight);
+                }
+            }
         } 
         else
         {
@@ -74,7 +83,11 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
             printf("        Sampled points from group:\n");
             for (size_t i = 0; i < sampledPoints.size(); i++)
             {
-                printf("          Point %ld\n", sampledPoints[i]->PointIndex);
+                auto sampledPoint = sampledPoints[i];
+                auto weight = groupCost / (numSamples*sampledPoint->Cost);
+                coresetPoints.push_back(WeightedPoint(sampledPoint->PointIndex, weight, false));
+                printf("          Adding point %ld - cost(p,A)=%0.5f - with weight %0.3f to the coreset\n",
+                        sampledPoint->PointIndex, sampledPoint->Cost, weight);
             }
         }
     }
