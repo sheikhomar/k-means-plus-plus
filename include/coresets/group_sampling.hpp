@@ -131,7 +131,7 @@ namespace coresets
         }
 
         std::shared_ptr<Group>
-        get(size_t index) const
+        at(size_t index) const
         {
             return this->groups[index];
         }

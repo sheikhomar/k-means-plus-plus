@@ -40,25 +40,43 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
 
     groupOvershotPoints(clusterAssignments, rings, groups);
     
+    printf("\n\nSampling from groups...\n");
+
+    size_t minSamplingSize = 1;
     auto totalCost = clusterAssignments.getTotalCost();
+
+    printf("  Minimum size before sampling from any group is %ld...\n", minSamplingSize);
+    printf("  cost(A) = %0.5f...\n", totalCost);
+    printf("  T = %ld...\n", T);
+    
     for (size_t i = 0; i < groups->size(); i++)
     {
-        auto group = groups->get(i);
+        auto group = groups->at(i);
         auto groupPoints = group->getPoints();
         auto groupCost = group->calcTotalCost();
         auto normalizedGroupCost = groupCost / totalCost;
-        auto numSamples = static_cast<size_t>(ceil(T * normalizedGroupCost));
-        auto sampledPoints = random.choice(groupPoints, numSamples);
+        auto numSamples = T * normalizedGroupCost;
 
-        printf("Group j=%ld l=%2d:   number of points=%2ld   cost=%2.4f   normalized cost=%0.4f   samples=%ld \n",
+        printf("\n    Group j=%ld l=%2d:   |G|=%2ld   cost(G)=%2.4f   cost(G)/cost(A)=%0.4f   T_g=%0.5f \n",
             group->RangeValue, group->RingRangeValue, groupPoints.size(), group->calcTotalCost(), normalizedGroupCost, 
             numSamples
         );
 
-        printf("  Sampled points from group:\n");
-        for (size_t i = 0; i < sampledPoints.size(); i++)
+        if (numSamples < minSamplingSize)
         {
-            printf("    Point index %ld\n", sampledPoints[i]->PointIndex);
+            printf("        Will not sample because T_g is below threshold...\n");
+
+        } 
+        else
+        {
+            size_t numSamplesInt = static_cast<size_t>(ceil(numSamples));
+            auto sampledPoints = random.choice(groupPoints, numSamplesInt);
+
+            printf("        Sampled points from group:\n");
+            for (size_t i = 0; i < sampledPoints.size(); i++)
+            {
+                printf("          Point %ld\n", sampledPoints[i]->PointIndex);
+            }
         }
     }
 
@@ -256,12 +274,12 @@ GroupSampling::makeGroups(const clustering::ClusterAssignmentList &clusters, con
                     // Group 0 has no upper bound. Notice this can be written as two-liners,
                     // but is expanded to make it easier to read the code.
                     shouldAddPointsIntoGroup = clusterCost >= lowerBound; 
-                    //printf("\n      Group j=%ld    lowerBoundCost=%0.4f\n", j, lowerBound, upperBound);
+                    printf("\n      Group j=%ld    lowerBoundCost=%0.4f\n", j, lowerBound, upperBound);
                 }
                 else
                 {
                     shouldAddPointsIntoGroup = clusterCost >= lowerBound && clusterCost < upperBound;
-                    //printf("\n      Group j=%ld    lowerBoundCost=%0.4f   upperBoundCost=%0.4f\n", j, lowerBound, upperBound);
+                    printf("\n      Group j=%ld    lowerBoundCost=%0.4f   upperBoundCost=%0.4f\n", j, lowerBound, upperBound);
                 }
                 
                 if (shouldAddPointsIntoGroup)
