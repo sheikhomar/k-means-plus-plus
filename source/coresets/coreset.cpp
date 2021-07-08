@@ -2,7 +2,7 @@
 
 using namespace coresets;
 
-Coreset::Coreset()
+Coreset::Coreset(size_t targetSize) : TargetSize(targetSize)
 {
 }
 

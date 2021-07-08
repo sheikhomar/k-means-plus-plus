@@ -25,7 +25,12 @@ namespace coresets
         std::vector<std::shared_ptr<WeightedPoint>> points;
 
     public:
-        Coreset();
+        /**
+         * The target number of points to include in this coreset.
+         */
+        const size_t TargetSize;
+
+        Coreset(size_t targetSize);
 
         /**
          * @brief Adds a point to the coreset.

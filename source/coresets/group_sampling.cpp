@@ -16,7 +16,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     const size_t n = data.rows();
     const size_t d = data.columns();
 
-    auto coreset = std::make_shared<Coreset>();
+    auto coreset = std::make_shared<Coreset>(T);
 
     // Step 1: Run k-means++ to get the initial solution A.
     clustering::KMeans kMeansAlg(k);
@@ -35,57 +35,8 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
 
     groupOvershotPoints(clusterAssignments, rings, groups);
 
-    printf("\n\nSampling from groups...\n");
-
-    size_t minSamplingSize = 1;
-    auto totalCost = clusterAssignments.getTotalCost();
-
-    printf("  Minimum size before sampling from any group is %ld...\n", minSamplingSize);
-    printf("  cost(A) = %0.5f...\n", totalCost);
-    printf("  T = %ld...\n", T);
-
-    for (size_t m = 0; m < groups->size(); m++)
-    {
-        auto group = groups->at(m);
-        auto groupPoints = group->getPoints();
-        auto groupCost = group->calcTotalCost();
-        auto normalizedGroupCost = groupCost / totalCost;
-        auto numSamples = T * normalizedGroupCost;
-
-        printf("\n    Group m=%ld:   |G_m|=%2ld   cost(G_m)=%2.4f   cost(G_m)/cost(A)=%0.4f   T_m=%0.5f \n",
-               m, groupPoints.size(), group->calcTotalCost(), normalizedGroupCost, numSamples);
-
-        if (numSamples < minSamplingSize)
-        {
-            printf("        Will not sample because T_m is below threshold...\n");
-            for (size_t c = 0; c < k; c++)
-            {
-                auto nPointsInCluster = group->countPointsInCluster(c);
-                if (nPointsInCluster > 0)
-                {
-                    double weight = static_cast<double>(nPointsInCluster);
-                    coreset->addCenter(c, weight);
-                    printf("            Added center c_%ld with weight %0.2f to the coreset\n", c, weight);
-                }
-            }
-        }
-        else
-        {
-            size_t numSamplesInt = static_cast<size_t>(ceil(numSamples));
-            auto sampledPoints = random.choice(groupPoints, numSamplesInt);
-
-            printf("        Sampled points from group:\n");
-            for (size_t i = 0; i < sampledPoints.size(); i++)
-            {
-                auto sampledPoint = sampledPoints[i];
-                auto weight = groupCost / (numSamples * sampledPoint->Cost);
-                coreset->addPoint(sampledPoint->PointIndex, weight);
-                printf("          Adding point %ld - cost(p,A)=%0.5f - with weight %0.3f to the coreset\n",
-                       sampledPoint->PointIndex, sampledPoint->Cost, weight);
-            }
-        }
-    }
-
+    addSampledPointsFromGroupsToCoreset(clusterAssignments, groups, coreset);
+    
     // printPythonCodeForVisualisation(result, rings);
 }
 
@@ -309,6 +260,64 @@ void GroupSampling::groupRingPoints(const clustering::ClusterAssignmentList &clu
                    nRingPointsForAllClusters, nGroupedPoints);
         }
         assert(nRingPointsForAllClusters == nGroupedPoints);
+    }
+}
+
+void GroupSampling::addSampledPointsFromGroupsToCoreset(const clustering::ClusterAssignmentList &clusterAssignments, const std::shared_ptr<GroupSet> groups, std::shared_ptr<Coreset> coresetContainer)
+{
+    utils::Random random;
+    printf("\n\nSampling from groups...\n");
+
+    const size_t minSamplingSize = 1;
+    auto T = coresetContainer->TargetSize;
+
+    auto totalCost = clusterAssignments.getTotalCost();
+    auto k = clusterAssignments.getNumberOfClusters();
+
+    printf("  Minimum size before sampling from any group is %ld...\n", minSamplingSize);
+    printf("  cost(A) = %0.5f...\n", totalCost);
+    printf("  T = %ld...\n", T);
+
+    for (size_t m = 0; m < groups->size(); m++)
+    {
+        auto group = groups->at(m);
+        auto groupPoints = group->getPoints();
+        auto groupCost = group->calcTotalCost();
+        auto normalizedGroupCost = groupCost / totalCost;
+        auto numSamples = T * normalizedGroupCost;
+
+        printf("\n    Group m=%ld:   |G_m|=%2ld   cost(G_m)=%2.4f   cost(G_m)/cost(A)=%0.4f   T_m=%0.5f \n",
+               m, groupPoints.size(), group->calcTotalCost(), normalizedGroupCost, numSamples);
+
+        if (numSamples < minSamplingSize)
+        {
+            printf("        Will not sample because T_m is below threshold...\n");
+            for (size_t c = 0; c < k; c++)
+            {
+                auto nPointsInCluster = group->countPointsInCluster(c);
+                if (nPointsInCluster > 0)
+                {
+                    double weight = static_cast<double>(nPointsInCluster);
+                    coresetContainer->addCenter(c, weight);
+                    printf("            Added center c_%ld with weight %0.2f to the coreset\n", c, weight);
+                }
+            }
+        }
+        else
+        {
+            size_t numSamplesInt = static_cast<size_t>(ceil(numSamples));
+            auto sampledPoints = random.choice(groupPoints, numSamplesInt);
+
+            printf("        Sampled points from group:\n");
+            for (size_t i = 0; i < sampledPoints.size(); i++)
+            {
+                auto sampledPoint = sampledPoints[i];
+                auto weight = groupCost / (numSamples * sampledPoint->Cost);
+                coresetContainer->addPoint(sampledPoint->PointIndex, weight);
+                printf("          Adding point %ld - cost(p,A)=%0.5f - with weight %0.3f to the coreset\n",
+                       sampledPoint->PointIndex, sampledPoint->Cost, weight);
+            }
+        }
     }
 }
 

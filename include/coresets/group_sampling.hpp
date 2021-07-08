@@ -458,6 +458,9 @@ namespace coresets
     class GroupSampling
     {
     public:
+
+        const size_t MinimumGroupSamplingSize = 1;
+
         GroupSampling();
 
         void
@@ -483,6 +486,8 @@ namespace coresets
          * @brief Group points arranged in rings.
          */
         void groupRingPoints(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, std::shared_ptr<GroupSet> groups);
+
+        void addSampledPointsFromGroupsToCoreset(const clustering::ClusterAssignmentList &clusterAssignments, const std::shared_ptr<GroupSet> groups, std::shared_ptr<Coreset> coresetContainer);
 
         void printPythonCodeForVisualisation(std::shared_ptr<clustering::ClusteringResult> result, std::shared_ptr<RingSet> rings);
     };
