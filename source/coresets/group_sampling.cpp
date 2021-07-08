@@ -49,22 +49,21 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     printf("  cost(A) = %0.5f...\n", totalCost);
     printf("  T = %ld...\n", T);
     
-    for (size_t i = 0; i < groups->size(); i++)
+    for (size_t m = 0; m < groups->size(); m++)
     {
-        auto group = groups->at(i);
+        auto group = groups->at(m);
         auto groupPoints = group->getPoints();
         auto groupCost = group->calcTotalCost();
         auto normalizedGroupCost = groupCost / totalCost;
         auto numSamples = T * normalizedGroupCost;
 
-        printf("\n    Group j=%ld l=%2d:   |G|=%2ld   cost(G)=%2.4f   cost(G)/cost(A)=%0.4f   T_g=%0.5f \n",
-            group->RangeValue, group->RingRangeValue, groupPoints.size(), group->calcTotalCost(), normalizedGroupCost, 
-            numSamples
+        printf("\n    Group m=%ld:   |G_m|=%2ld   cost(G_m)=%2.4f   cost(G_m)/cost(A)=%0.4f   T_m=%0.5f \n",
+            m, groupPoints.size(), group->calcTotalCost(), normalizedGroupCost, numSamples
         );
 
         if (numSamples < minSamplingSize)
         {
-            printf("        Will not sample because T_g is below threshold...\n");
+            printf("        Will not sample because T_m is below threshold...\n");
 
         } 
         else
