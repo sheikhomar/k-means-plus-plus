@@ -6,6 +6,7 @@ set(headers
     include/coresets/coreset.hpp
     include/coresets/group_sampling.hpp
     include/coresets/sensitivity_sampling.hpp
+    include/coresets/stream_km.hpp
     include/utils/random.hpp
 )
 
@@ -17,6 +18,7 @@ set(sources
     source/coresets/coreset.cpp
     source/coresets/group_sampling.cpp
     source/coresets/sensitivity_sampling.cpp
+    source/coresets/stream_km.cpp
     source/utils/random.cpp
 )
 

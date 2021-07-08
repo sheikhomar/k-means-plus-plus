@@ -3,6 +3,7 @@
 #include <clustering/local_search.hpp>
 #include <coresets/sensitivity_sampling.hpp>
 #include <coresets/group_sampling.hpp>
+#include <coresets/stream_km.hpp>
 
 using namespace std;
 using namespace clustering;
@@ -131,20 +132,23 @@ int main() {
 
   size_t k = 3; // Number of clusters.
   size_t T = 20; // Number of target points.
-  size_t T_s = 1; // 
-  size_t beta = 100; //Variable for ring ranges
-  size_t H = 4; // Group range size
-  coresets::GroupSampling gs(k, T, beta, H, T_s);
-  gs.run(data);
+  // size_t T_s = 1; // 
+  // size_t beta = 100; //Variable for ring ranges
+  // size_t H = 4; // Group range size
+  // coresets::GroupSampling gs(k, T, beta, H, T_s);
+  // auto coreset = gs.run(data);
 
   // coresets::SensitivitySampling sensitivitySampling(k, T);
-  // auto coresetBySens = sensitivitySampling.run(data);
+  // auto coreset = sensitivitySampling.run(data);
 
-  // for (size_t i = 0; i < coresetBySens->size(); i++)
-  // {
-  //   auto point = coresetBySens->at(i);
-  //   // if (point->IsCenter)
-  //   printf("Point %ld weight %0.4f\n", point->Index, point->Weight);
-  // }
+  coresets::StreamKMeans streamKMeans(T);
+  auto coreset = streamKMeans.run(data);
+
+  for (size_t i = 0; i < coreset->size(); i++)
+  {
+    auto point = coreset->at(i);
+    printf(point->IsCenter ? "Center" : "Point");
+    printf(" %ld with weight %0.4f\n", point->Index, point->Weight);
+  }
   
 }
