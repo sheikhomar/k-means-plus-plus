@@ -485,8 +485,11 @@ namespace coresets
 
         GroupSampling(size_t numberOfClusters, size_t targetSamplesInCoreset, size_t beta, size_t groupRangeSize, size_t minimumGroupSamplingSize);
 
-        void
+        std::shared_ptr<Coreset>
         run(const blaze::DynamicMatrix<double> &data);
+
+        std::shared_ptr<Coreset>
+        run(const std::shared_ptr<clustering::ClusteringResult> result);
 
     private:
         utils::Random random;

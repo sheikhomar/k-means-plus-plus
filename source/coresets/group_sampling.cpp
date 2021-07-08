@@ -10,14 +10,18 @@ GroupSampling::GroupSampling(size_t numberOfClusters, size_t targetSamplesInCore
 {
 }
 
-void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
+std::shared_ptr<Coreset>
+GroupSampling::run(const blaze::DynamicMatrix<double> &data)
+{
+    clustering::KMeans kMeansAlg(this->NumberOfClusters);
+    auto clusters = kMeansAlg.run(data);
+    return run(clusters);
+}
+
+std::shared_ptr<Coreset>
+GroupSampling::run(const std::shared_ptr<clustering::ClusteringResult> result)
 {
     auto coreset = std::make_shared<Coreset>(this->TargetSamplesInCoreset);
-
-    // Step 1: Run k-means++ to get the initial solution A.
-    clustering::KMeans kMeansAlg(this->NumberOfClusters);
-    auto result = kMeansAlg.run(data);
-    auto centers = result->getCentroids();
 
     auto clusterAssignments = result->getClusterAssignments();
 
@@ -32,6 +36,8 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     groupOvershotPoints(clusterAssignments, rings, groups);
 
     addSampledPointsFromGroupsToCoreset(clusterAssignments, groups, coreset);
+
+    return coreset;
 }
 
 std::shared_ptr<RingSet>
