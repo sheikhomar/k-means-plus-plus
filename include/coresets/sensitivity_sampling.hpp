@@ -10,19 +10,31 @@
 
 namespace coresets
 {
-    class CoresetResult
-    {
-    public:
-        CoresetResult();
-    };
-
     class SensitivitySampling
     {
     public:
-        std::shared_ptr<CoresetResult>
+        /**
+         * Number of points that the algorithm should aim to include in the coreset: T
+         */
+        const size_t TargetSamplesInCoreset;
+
+        /**
+         * Number of clusters to partition the data into: k
+         */
+        const size_t NumberOfClusters;
+
+        SensitivitySampling(size_t numberOfClusters, size_t targetSamplesInCoreset);
+
+        std::shared_ptr<Coreset>
         run(const blaze::DynamicMatrix<double> &data);
 
-        std::vector<WeightedPoint>
-        calcCoresetPoints(const clustering::ClusterAssignmentList clusterAssignments, const size_t targetCoresetPoints);
+    private:
+        utils::Random random;
+
+        std::shared_ptr<Coreset>
+        generateCoresetPoints(const clustering::ClusterAssignmentList &clusterAssignments);
+
+        std::shared_ptr<blaze::DynamicVector<double>>
+        calcCenterWeights(const clustering::ClusterAssignmentList &clusterAssignments, std::shared_ptr<blaze::DynamicVector<size_t>> sampledIndices);
     };
 }
