@@ -22,21 +22,29 @@ namespace coresets
 
     class Coreset
     {
-        const size_t numOfDimensions;
-        size_t numOfPoints;
-        blaze::DynamicMatrix<double> points;
-        std::vector<double> weights;
+        std::vector<std::shared_ptr<WeightedPoint>> points;
 
     public:
-        Coreset(size_t initialSize, size_t numOfDimensions);
+        Coreset();
 
-        void
-        add(const blaze::DynamicMatrix<double> &dataPoints, size_t pointIndex, double weight);
+        /**
+         * @brief Adds a point to the coreset.
+         * @param pointIndex The index of the point to add to the coreset.
+         * @param weight The weight of the point.
+         */
+        void addPoint(size_t pointIndex, double weight);
+
+        /**
+         * @brief Adds a center to the coreset.
+         * @param clusterIndex The index of the center to add to the coreset.
+         * @param weight The weight of the center.
+         */
+        void addCenter(size_t clusterIndex, double weight);
 
         /**
          * @brief Returns the number of points in this coreset.
          */
         size_t
-        getNumberOfPoints();
+        size();
     };
 }

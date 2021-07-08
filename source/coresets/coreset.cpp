@@ -2,27 +2,24 @@
 
 using namespace coresets;
 
-Coreset::Coreset(size_t initialSize, size_t d) : numOfDimensions(d), numOfPoints(0), points(initialSize, d), weights()
+Coreset::Coreset()
 {
 }
 
-void
-Coreset::add(const blaze::DynamicMatrix<double> &dataPoints, const size_t pointIndex, const double weight)
+void Coreset::addPoint(size_t pointIndex, double weight)
 {
-    auto currentCapacity = this->points.capacity() / numOfDimensions;
-    if (currentCapacity < (this->numOfPoints + 1))
-    {
-        auto newCapacity = ceil(static_cast<double>(currentCapacity) * 1.5);
-        this->points.resize(static_cast<size_t>(newCapacity), numOfDimensions);
-    }
+    auto coresetPoint = std::make_shared<WeightedPoint>(pointIndex, weight, false);
+    this->points.push_back(coresetPoint);
+}
 
-    blaze::row(this->points, this->numOfPoints) = blaze::row(dataPoints, pointIndex);
-    weights.push_back(weight);
-    numOfPoints++;
+void Coreset::addCenter(size_t clusterIndex, double weight)
+{
+    auto coresetPoint = std::make_shared<WeightedPoint>(clusterIndex, weight, true);
+    this->points.push_back(coresetPoint);
 }
 
 size_t
-Coreset::getNumberOfPoints()
+Coreset::size()
 {
-    return this->numOfPoints;
+    return this->points.size();
 }

@@ -14,7 +14,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     const uint T = 20;     // T is the number of sampled points. It is hyperparam. Usually T=200*k
     const size_t n = data.rows();
     const size_t d = data.columns();
-    auto coreset = std::make_shared<Coreset>(T, d);
+    auto coreset = std::make_shared<Coreset>();
     std::vector<WeightedPoint> coresetPoints;
 
     // Step 1: Run k-means++ to get the initial solution A.
@@ -34,7 +34,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
 
     auto rings = this->makeRings(clusterAssignments);
 
-    addShortfallPointsToCoreset(clusterAssignments, rings, coresetPoints);
+    addShortfallPointsToCoreset(clusterAssignments, rings, coreset);
 
     auto groups = makeGroups(clusterAssignments, rings, 4);
 
@@ -70,7 +70,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
                 if (nPointsInCluster > 0)
                 {
                     double weight = static_cast<double>(nPointsInCluster);
-                    coresetPoints.push_back(WeightedPoint(c, weight, true));
+                    coreset->addCenter(c, weight);
                     printf("            Added center c_%ld with weight %0.2f to the coreset\n", c, weight);
                 }
             }
@@ -85,7 +85,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
             {
                 auto sampledPoint = sampledPoints[i];
                 auto weight = groupCost / (numSamples*sampledPoint->Cost);
-                coresetPoints.push_back(WeightedPoint(sampledPoint->PointIndex, weight, false));
+                coreset->addPoint(sampledPoint->PointIndex, weight);
                 printf("          Adding point %ld - cost(p,A)=%0.5f - with weight %0.3f to the coreset\n",
                         sampledPoint->PointIndex, sampledPoint->Cost, weight);
             }
@@ -160,7 +160,7 @@ GroupSampling::makeRings(const clustering::ClusterAssignmentList &clusterAssignm
     return rings;
 }
 
-void GroupSampling::addShortfallPointsToCoreset(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints)
+void GroupSampling::addShortfallPointsToCoreset(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, std::shared_ptr<Coreset> coresetContainer)
 {
     // Handle points whose costs are below the lowest ring range i.e. l < log(1/beta).
     // These are called shortfall points because they fall short of being captured by the
@@ -185,7 +185,7 @@ void GroupSampling::addShortfallPointsToCoreset(const clustering::ClusterAssignm
 
         // Add center to the coreset.
         printf("Add center of cluster %ld with weight %0.2f to coreset.\n", c, weight);
-        coresetPoints.push_back(WeightedPoint(c, weight, true));
+        coresetContainer->addCenter(c, weight);
     }
 }
 

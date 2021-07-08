@@ -466,7 +466,7 @@ namespace coresets
         /**
          * @brief Add points inside doughnut holes i.e., points that are closest to cluster centers but are not captured by any rings.
          */
-        void addShortfallPointsToCoreset(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, std::vector<WeightedPoint> &coresetPoints);
+        void addShortfallPointsToCoreset(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, std::shared_ptr<Coreset> coresetContainer);
 
         /**
          * @brief Group overshot points i.e., points that are far from cluster centers and are not captured by any rings.
