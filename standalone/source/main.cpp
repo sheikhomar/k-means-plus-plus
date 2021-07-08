@@ -129,6 +129,11 @@ int main() {
 
   // std::cout << "Final centers: \n" << result->getCentroids();
 
-  coresets::GroupSampling gs;
+  size_t k = 3; // Number of clusters.
+  size_t T = 20; // Number of target points.
+  size_t T_s = 1; // 
+  size_t beta = 100; //Variable for ring ranges
+  size_t H = 4; // Group range size
+  coresets::GroupSampling gs(k, T, beta, H, T_s);
   gs.run(data);
 }

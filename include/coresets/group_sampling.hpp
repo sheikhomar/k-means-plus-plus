@@ -458,16 +458,38 @@ namespace coresets
     class GroupSampling
     {
     public:
+        /**
+         * The minimum sampling size before attempting to sample points from a group: T_s
+         */
+        const size_t MinimumGroupSamplingSize;
 
-        const size_t MinimumGroupSamplingSize = 1;
+        /**
+         * Used to compute the ring ranges: ell in [-log(beta), log(beta)]
+         */
+        const size_t Beta;
 
-        GroupSampling();
+        /**
+         * Number of points that the algorithm should aim to include in the coreset: T
+         */
+        const size_t TargetSamplesInCoreset;
+
+        /**
+         * Number of clusters to partition the data into: k
+         */
+        const size_t NumberOfClusters;
+
+        /**
+         * The size of the group range: H
+         */
+        const size_t GroupRangeSize;
+
+        GroupSampling(size_t numberOfClusters, size_t targetSamplesInCoreset, size_t beta, size_t groupRangeSize, size_t minimumGroupSamplingSize);
 
         void
         run(const blaze::DynamicMatrix<double> &data);
 
     private:
-        const size_t beta;
+        utils::Random random;
 
         std::shared_ptr<RingSet>
         makeRings(const clustering::ClusterAssignmentList &clusters);

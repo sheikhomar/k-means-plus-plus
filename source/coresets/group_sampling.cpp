@@ -2,24 +2,20 @@
 
 using namespace coresets;
 
-GroupSampling::GroupSampling() : beta(200)
+GroupSampling::GroupSampling(size_t numberOfClusters, size_t targetSamplesInCoreset, size_t beta, size_t groupRangeSize, size_t minimumGroupSamplingSize) : NumberOfClusters(numberOfClusters),
+                                                                                                                                                            TargetSamplesInCoreset(targetSamplesInCoreset),
+                                                                                                                                                            Beta(beta),
+                                                                                                                                                            GroupRangeSize(groupRangeSize),
+                                                                                                                                                            MinimumGroupSamplingSize(minimumGroupSamplingSize)
 {
 }
 
 void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
 {
-    utils::Random random;
-    const uint kPrime = 3;
-    const uint k = kPrime;           // TODO: Should be k = 2 * kPrime;
-    const uint T = 20;               // T is the number of sampled points. It is hyperparam. Usually T=200*k
-    const size_t groupRangeSize = 5; // H is the number of group range
-    const size_t n = data.rows();
-    const size_t d = data.columns();
-
-    auto coreset = std::make_shared<Coreset>(T);
+    auto coreset = std::make_shared<Coreset>(this->TargetSamplesInCoreset);
 
     // Step 1: Run k-means++ to get the initial solution A.
-    clustering::KMeans kMeansAlg(k);
+    clustering::KMeans kMeansAlg(this->NumberOfClusters);
     auto result = kMeansAlg.run(data);
     auto centers = result->getCentroids();
 
@@ -27,7 +23,7 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
 
     auto rings = this->makeRings(clusterAssignments);
 
-    auto groups = std::make_shared<GroupSet>(groupRangeSize);
+    auto groups = std::make_shared<GroupSet>(this->GroupRangeSize);
 
     addShortfallPointsToCoreset(clusterAssignments, rings, coreset);
 
@@ -36,14 +32,12 @@ void GroupSampling::run(const blaze::DynamicMatrix<double> &data)
     groupOvershotPoints(clusterAssignments, rings, groups);
 
     addSampledPointsFromGroupsToCoreset(clusterAssignments, groups, coreset);
-    
-    // printPythonCodeForVisualisation(result, rings);
 }
 
 std::shared_ptr<RingSet>
 GroupSampling::makeRings(const clustering::ClusterAssignmentList &clusterAssignments)
 {
-    const int ringRangeStart = -static_cast<int>(floor(std::log10(static_cast<double>(beta))));
+    const int ringRangeStart = -static_cast<int>(floor(std::log10(static_cast<double>(Beta))));
     const int ringRangeEnd = -ringRangeStart;
     const auto n = clusterAssignments.getNumberOfPoints();
     const auto k = clusterAssignments.getNumberOfClusters();
