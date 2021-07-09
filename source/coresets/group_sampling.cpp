@@ -108,7 +108,7 @@ GroupSampling::makeRings(const clustering::ClusterAssignmentList &clusterAssignm
 void GroupSampling::addShortfallPointsToCoreset(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, std::shared_ptr<Coreset> coresetContainer)
 {
     printf("\n\nAdding shortfall points to the coreset..\n");
-    
+
     // Handle points whose costs are below the lowest ring range i.e. l < log(1/beta).
     // These are called shortfall points because they fall short of being captured by the
     // inner-most ring. These points are snapped to the center of the assigned cluster by
@@ -279,6 +279,15 @@ void GroupSampling::addSampledPointsFromGroupsToCoreset(const clustering::Cluste
     printf("  cost(A) = %0.5f...\n", totalCost);
     printf("  T = %ld...\n", T);
 
+    // The number of remaining points needed for the coreset.
+    size_t T_remaining = T;
+
+    // Tracks the groups that we need to sample points from.
+    std::vector<size_t> samplingGroupIndices;
+
+    // Track the total cost of the groups that we need to sample points from.
+    double samplingGroupTotalCost = 0.0;
+
     for (size_t m = 0; m < groups->size(); m++)
     {
         auto group = groups->at(m);
@@ -303,18 +312,45 @@ void GroupSampling::addSampledPointsFromGroupsToCoreset(const clustering::Cluste
                 }
             }
         }
+        else if (numSamples >= groupPoints.size())
+        {
+            printf("        Will not sample because T_m >= |G_m|.\n");
+            for (size_t i = 0; i < groupPoints.size(); i++)
+            {
+                coresetContainer->addPoint(groupPoints[i]->PointIndex, 1.0);
+            }
+            T_remaining -= groupPoints.size();
+        }
         else
         {
-            size_t numSamplesInt = static_cast<size_t>(ceil(numSamples));
-            auto sampledPoints = random.choice(groupPoints, numSamplesInt);
+            printf("        Will sample later.\n");
+            samplingGroupIndices.push_back(m);
+            samplingGroupTotalCost += groupCost;
+        }
+    }
 
-            printf("        Sampled points from group:\n");
-            for (size_t i = 0; i < sampledPoints.size(); i++)
-            {
-                auto sampledPoint = sampledPoints[i];
-                auto weight = groupCost / (numSamples * sampledPoint->Cost);
-                coresetContainer->addPoint(sampledPoint->PointIndex, weight);
-            }
+    // Now, we have to deal with the groups that we can sample points from.
+    printf("\n\nDealing with the groups that we can sample points from...");
+    for (auto &m : samplingGroupIndices)
+    {
+        auto group = groups->at(m);
+        auto groupCost = group->calcTotalCost();
+        auto groupPoints = group->getPoints();
+        auto normalizedGroupCost = groupCost / samplingGroupTotalCost;
+        auto numSamplesReal = T_remaining * normalizedGroupCost;
+        auto numSamplesInt = random.stochasticRounding(numSamplesReal);
+
+        printf("\n    Group m=%ld:   |G_m|=%2ld   cost(G_m)=%2.4f   cost(G_m)/cost(A)=%0.4f   T_m=%0.5f  round(T_m)=%ld \n",
+               m, groupPoints.size(), group->calcTotalCost(), normalizedGroupCost, numSamplesReal, numSamplesInt);
+
+        auto sampledPoints = random.choice(groupPoints, numSamplesInt);
+
+        printf("        Sampled points from group:\n");
+        for (size_t i = 0; i < sampledPoints.size(); i++)
+        {
+            auto sampledPoint = sampledPoints[i];
+            auto weight = groupCost / (numSamplesInt * sampledPoint->Cost);
+            coresetContainer->addPoint(sampledPoint->PointIndex, weight);
         }
     }
 }
