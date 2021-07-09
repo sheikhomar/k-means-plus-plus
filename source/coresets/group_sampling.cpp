@@ -129,7 +129,6 @@ void GroupSampling::addShortfallPointsToCoreset(const clustering::ClusterAssignm
         double weight = static_cast<double>(nShortfallPoints);
 
         // Add center to the coreset.
-        printf("Add center of cluster %ld with weight %0.2f to coreset.\n", c, weight);
         coresetContainer->addCenter(c, weight);
     }
 }
@@ -299,7 +298,6 @@ void GroupSampling::addSampledPointsFromGroupsToCoreset(const clustering::Cluste
                 {
                     double weight = static_cast<double>(nPointsInCluster);
                     coresetContainer->addCenter(c, weight);
-                    printf("            Added center c_%ld with weight %0.2f to the coreset\n", c, weight);
                 }
             }
         }
@@ -314,8 +312,6 @@ void GroupSampling::addSampledPointsFromGroupsToCoreset(const clustering::Cluste
                 auto sampledPoint = sampledPoints[i];
                 auto weight = groupCost / (numSamples * sampledPoint->Cost);
                 coresetContainer->addPoint(sampledPoint->PointIndex, weight);
-                printf("          Adding point %ld - cost(p,A)=%0.5f - with weight %0.3f to the coreset\n",
-                       sampledPoint->PointIndex, sampledPoint->Cost, weight);
             }
         }
     }
