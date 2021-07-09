@@ -29,11 +29,11 @@ GroupSampling::run(const std::shared_ptr<clustering::ClusteringResult> result)
 
     auto groups = std::make_shared<GroupSet>(this->GroupRangeSize);
 
-    addShortfallPointsToCoreset(clusterAssignments, rings, coreset);
-
     groupRingPoints(clusterAssignments, rings, groups);
 
     groupOvershotPoints(clusterAssignments, rings, groups);
+
+    addShortfallPointsToCoreset(clusterAssignments, rings, coreset);
 
     addSampledPointsFromGroupsToCoreset(clusterAssignments, groups, coreset);
 
