@@ -2,8 +2,7 @@
 
 using namespace utils;
 
-
-RandomIndexer::RandomIndexer(std::mt19937 re, size_t s) : randomEngine2(re), sampler(0, s-1)
+RandomIndexer::RandomIndexer(std::mt19937 re, size_t s) : randomEngine2(re), sampler(0, s - 1)
 {
 }
 
@@ -90,7 +89,7 @@ Random::choice(const size_t k, const size_t n, blaze::DynamicVector<size_t> weig
     result->reset();
 
     std::discrete_distribution<size_t> weightedChoice(weights.begin(), weights.end());
-    
+
     for (size_t i = 0; i < k; i++)
     {
         size_t pickedIndex = weightedChoice(this->randomEngine);
@@ -106,4 +105,18 @@ Random::choice(blaze::DynamicVector<size_t> weights)
     std::discrete_distribution<size_t> weightedChoice(weights.begin(), weights.end());
     size_t pickedIndex = weightedChoice(this->randomEngine);
     return pickedIndex;
+}
+
+size_t
+Random::stochasticRounding(double value)
+{
+    auto valueHigh = floor(value);
+    auto valueLow = ceil(value);
+    auto proba = (value - valueLow) / (valueHigh - valueLow);
+    auto randomVal = this->getDouble();
+    if (randomVal < proba)
+    {
+        return static_cast<size_t>(round(valueHigh)); // Round up
+    }
+    return static_cast<size_t>(round(valueLow)); // Round down
 }

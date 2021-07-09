@@ -77,6 +77,14 @@ namespace utils
         }
 
         /**
+         * @brief Stochastically rounds up or down a real number `v` with probability (v-⌊v⌋)/(⌈v⌉-⌊v⌋).
+         * See https://nhigham.com/2020/07/07/what-is-stochastic-rounding/
+         * @param value The floating point number to be round up or down.
+         */
+        size_t
+        stochasticRounding(double value);
+
+        /**
          * @brief Initialises random class.
          * @param fixedSeed The seed for random number generators. Use a value other than -1 to make the randomized algorithms deterministic. Choose -1 to generate a random seed.
          */
