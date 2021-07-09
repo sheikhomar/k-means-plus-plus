@@ -12,7 +12,7 @@ namespace coresets
     struct WeightedPoint
     {
         const size_t Index;
-        const double Weight;
+        double Weight;
         const bool IsCenter;
 
         WeightedPoint(size_t index, double weight, bool isCenter) : Index(index), Weight(weight), IsCenter(isCenter)
@@ -57,5 +57,14 @@ namespace coresets
          */
         size_t
         size() const;
+
+        /**
+         * @brief Finds a point by its index.
+         * @param index The index to search for.
+         * @param isCenter Whether to look for a center point.
+         * @returns An object or `nullptr` if no point found.
+         */
+        std::shared_ptr<WeightedPoint>
+        findPoint(size_t index, bool isCenter = false);
     };
 }
