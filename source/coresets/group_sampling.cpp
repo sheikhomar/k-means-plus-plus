@@ -107,6 +107,8 @@ GroupSampling::makeRings(const clustering::ClusterAssignmentList &clusterAssignm
 
 void GroupSampling::addShortfallPointsToCoreset(const clustering::ClusterAssignmentList &clusters, const std::shared_ptr<RingSet> rings, std::shared_ptr<Coreset> coresetContainer)
 {
+    printf("\n\nAdding shortfall points to the coreset..\n");
+    
     // Handle points whose costs are below the lowest ring range i.e. l < log(1/beta).
     // These are called shortfall points because they fall short of being captured by the
     // inner-most ring. These points are snapped to the center of the assigned cluster by
