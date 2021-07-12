@@ -179,6 +179,8 @@ target_compile_options(${PROJECT_NAME}_LIB PUBLIC "$<$<COMPILE_LANG_AND_ID:CXX,M
 #    ${PROJECT_NAME}_PROJECT_WARNINGS        
 #)
 
+find_package(Boost 1.71.0 REQUIRED COMPONENTS iostreams)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${Boost_LIBRARIES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
 

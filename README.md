@@ -24,10 +24,9 @@ rm -rf blaze-3.8/
 Download Enron data:
 
 ```bash
-mkdir data
-cd data
-wget https://archive.ics.uci.edu/ml/machine-learning-databases/bag-of-words/docword.enron.txt.gz
-gunzip docword.enron.txt.gz
+mkdir -p data/raw
+curl https://archive.ics.uci.edu/ml/machine-learning-databases/bag-of-words/docword.enron.txt.gz \
+  --output data/raw/docword.enron.txt.gz
 ```
 
 Build via CMake:
