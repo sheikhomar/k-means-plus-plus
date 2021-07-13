@@ -36,3 +36,39 @@ cmake -S standalone -B build/standalone
 cmake --build build/standalone
 ./build/standalone/kmeans --help
 ```
+
+## Downloading Datasets
+
+Create data directories:
+
+```bash
+mkdir -p data/raw
+mkdir -p data/results
+```
+
+- US Census Data (1990)
+
+    ```bash
+    curl https://archive.ics.uci.edu/ml/machine-learning-databases/census1990-mld/USCensus1990.data.txt \
+        --output data/raw/USCensus1990.data.txt
+    ```
+
+- Covertype
+
+    ```bash
+    curl https://archive.ics.uci.edu/ml/machine-learning-databases/covtype/covtype.data.gz \
+        --output data/raw/covtype.data.gz
+    ```
+
+- Bag of Words Datasets
+
+    ```bash
+    curl https://archive.ics.uci.edu/ml/machine-learning-databases/bag-of-words/docword.enron.txt.gz \
+        --output data/raw/docword.enron.txt.gz
+    ```
+- Tower dataset
+
+    ```bash
+    curl http://homepages.uni-paderborn.de/frahling/instances/Tower.txt \
+        --output data/raw/Tower.txt
+    ```
