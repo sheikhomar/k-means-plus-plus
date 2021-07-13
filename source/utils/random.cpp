@@ -100,7 +100,7 @@ Random::choice(const size_t k, const size_t n, blaze::DynamicVector<size_t> weig
 }
 
 size_t
-Random::choice(blaze::DynamicVector<size_t> weights)
+Random::choice(blaze::DynamicVector<double> weights)
 {
     std::discrete_distribution<size_t> weightedChoice(weights.begin(), weights.end());
     size_t pickedIndex = weightedChoice(this->randomEngine);

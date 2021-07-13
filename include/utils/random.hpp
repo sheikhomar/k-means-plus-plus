@@ -49,7 +49,7 @@ namespace utils
          * @brief Randomly select an index using the given weights.
          */
         size_t
-        choice(blaze::DynamicVector<size_t> weights);
+        choice(blaze::DynamicVector<double> weights);
 
         /**
          * @brief Select a number of elements from vector uniformly at random.
