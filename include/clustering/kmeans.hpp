@@ -21,10 +21,11 @@ namespace clustering
     class KMeans
     {
     private:
-        uint numOfClusters;
-        bool initKMeansPlusPlus;
-        uint maxIterations;
-        double convergenceDiff;
+        const size_t numOfClusters;
+        const bool initKMeansPlusPlus;
+        const size_t maxIterations;
+        const double convergenceDiff;
+        const bool PrecomputeDistances;
 
         /**
          * @brief Creates centroids by picking points in the data matrix uniformly at random.
@@ -46,10 +47,11 @@ namespace clustering
          * @brief Creates a new instance of KMeans.
          * @param numOfClusters The number of clusters to generate.
          * @param initKMeansPlusPlus Initialise centroids using k-Means++.
+         * @param precomputeDistances Precompute pairwise distances to speed up computation.
          * @param maxIterations Maximum number of iterations.
          * @param convergenceDiff The difference in the norms of the centroids when to stop k-Means iteration.
          */
-        KMeans(uint numOfClusters, bool initKMeansPlusPlus = true, uint maxIterations = 100, double convergenceDiff = 0.0001);
+        KMeans(uint numOfClusters, bool initKMeansPlusPlus = true, bool precomputeDistances = false, uint maxIterations = 100, double convergenceDiff = 0.0001);
 
         /**
          * @brief Runs the algorithm.

@@ -2,15 +2,43 @@
 
 using namespace clustering;
 
-KMeans::KMeans(uint k, bool kpp, uint miter, double convDiff) : numOfClusters(k), initKMeansPlusPlus(kpp), maxIterations(miter), convergenceDiff(convDiff)
+KMeans::KMeans(uint k, bool kpp, bool precomputeDistances, uint miter, double convDiff) : numOfClusters(k), initKMeansPlusPlus(kpp), PrecomputeDistances(precomputeDistances), maxIterations(miter), convergenceDiff(convDiff)
 {
 }
 
 std::shared_ptr<ClusteringResult>
 KMeans::run(const blaze::DynamicMatrix<double> &data)
 {
-  auto centroids = (this->initKMeansPlusPlus ? this->initCentroidsKMeansPlusPlus(data) : this->initCentroidsNaive(data));
-  return this->runLloydsAlgorithm(data, centroids);
+  std::vector<size_t> initialCenters;
+  size_t k = this->numOfClusters;
+  size_t n = data.rows();
+  size_t d = data.columns();
+
+  if (this->initKMeansPlusPlus)
+  {
+    initialCenters = this->pickInitialCentersViaKMeansPlusPlus(data, PrecomputeDistances);
+  }
+  else
+  {
+    utils::Random random;
+
+    auto randomPointGenerator = random.getIndexer(n);
+
+    for (size_t c = 0; c < k; c++)
+    {
+      // Pick a random point p as a cluster center.
+      auto randomPoint = randomPointGenerator.next();
+      initialCenters.push_back(randomPoint);
+    }
+  }
+
+  blaze::DynamicMatrix<double> centers(k, d);
+  for (size_t c = 0; c < k; c++)
+  {
+    size_t pointIndex = initialCenters[c];
+    blaze::row(centers, c) = blaze::row(data, pointIndex);
+  }
+  return this->runLloydsAlgorithm(data, centers);
 }
 
 blaze::DynamicMatrix<double>
