@@ -8,6 +8,7 @@ set(headers
     include/coresets/sensitivity_sampling.hpp
     include/coresets/stream_km.hpp
     include/data/bow_parser.hpp
+    include/data/census_parser.hpp
     include/data/data_parser.hpp
     include/utils/random.hpp
 )
@@ -22,6 +23,7 @@ set(sources
     source/coresets/sensitivity_sampling.cpp
     source/coresets/stream_km.cpp
     source/data/bow_parser.cpp
+    source/data/census_parser.cpp
     source/utils/random.cpp
 )
 

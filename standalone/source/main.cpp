@@ -4,9 +4,12 @@
 #include <coresets/sensitivity_sampling.hpp>
 #include <coresets/group_sampling.hpp>
 #include <coresets/stream_km.hpp>
+#include <data/bow_parser.hpp>
+#include <data/census_parser.hpp>
 
 using namespace std;
 using namespace clustering;
+using namespace data;
 
 int main() {
     blaze::DynamicMatrix<double> data {
@@ -130,8 +133,8 @@ int main() {
 
   // std::cout << "Final centers: \n" << result->getCentroids();
 
-  size_t k = 3; // Number of clusters.
-  size_t T = 20; // Number of target points.
+  // size_t k = 3; // Number of clusters.
+  // size_t T = 20; // Number of target points.
   // size_t T_s = 1; // 
   // size_t beta = 100; //Variable for ring ranges
   // size_t H = 4; // Group range size
@@ -141,14 +144,21 @@ int main() {
   // coresets::SensitivitySampling sensitivitySampling(k, T);
   // auto coreset = sensitivitySampling.run(data);
 
-  coresets::StreamKMeans streamKMeans(T);
-  auto coreset = streamKMeans.run(data);
+  // coresets::StreamKMeans streamKMeans(T);
+  // auto coreset = streamKMeans.run(data);
 
-  for (size_t i = 0; i < coreset->size(); i++)
-  {
-    auto point = coreset->at(i);
-    printf(point->IsCenter ? "Center" : "Point");
-    printf(" %ld with weight %0.4f\n", point->Index, point->Weight);
-  }
+  // for (size_t i = 0; i < coreset->size(); i++)
+  // {
+  //   auto point = coreset->at(i);
+  //   printf(point->IsCenter ? "Center" : "Point");
+  //   printf(" %ld with weight %0.4f\n", point->Index, point->Weight);
+  // }
   
+  auto parser = CensusParser();
+  auto parsedData = parser.parse("data/raw/USCensus1990.data.txt");
+
+  printf("Data loading completed!\n");
+  
+  KMeans kMeansAlg(10, true, false, 100U, 0.0001);
+  auto result = kMeansAlg.run(*parsedData);
 }
