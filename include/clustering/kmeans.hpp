@@ -20,28 +20,6 @@ namespace clustering
      */
     class KMeans
     {
-    private:
-        const size_t numOfClusters;
-        const bool initKMeansPlusPlus;
-        const size_t maxIterations;
-        const double convergenceDiff;
-        const bool PrecomputeDistances;
-
-        /**
-         * @brief Creates centroids by picking points in the data matrix uniformly at random.
-         * @param dataMatrix A NxD data matrix containing N data points where each point has D dimensions.
-         */
-        blaze::DynamicMatrix<double>
-        initCentroidsNaive(const blaze::DynamicMatrix<double> &dataMatrix);
-
-        /**
-         * @brief Run Lloyd's algorithm to perform the clustering of data points.
-         * @param dataMatrix A NxD data matrix containing N data points where each point has D dimensions.
-         * @param dataMatrix Initial k centroids where k is the number of required clusters.
-         */
-        std::shared_ptr<ClusteringResult>
-        runLloydsAlgorithm(const blaze::DynamicMatrix<double> &dataMatrix, blaze::DynamicMatrix<double> initialCentroids);
-
     public:
         /**
          * @brief Creates a new instance of KMeans.
@@ -61,22 +39,30 @@ namespace clustering
         run(const blaze::DynamicMatrix<double> &data);
 
         /**
-         * @brief Creates centroids according to the k-Means++ initialisation.
-         * @param dataMatrix A NxD data matrix containing N data points where each point has D dimensions.
-         */
-        blaze::DynamicMatrix<double>
-        initCentroidsKMeansPlusPlus(const blaze::DynamicMatrix<double> &dataMatrix);
-
-        blaze::DynamicMatrix<double>
-        initCentroidsKMeansPlusPlus2(const blaze::DynamicMatrix<double> &dataMatrix);
-
-        /**
          * @brief Picks `k` points as the initial centers using the k-Means++ initialisation procedure.
          * @param dataMatrix A NxD data matrix containing N data points where each point has D dimensions.
          * @param precomputeDistances Whether to precompute pairwise distances.
          */
         std::vector<size_t>
         pickInitialCentersViaKMeansPlusPlus(const blaze::DynamicMatrix<double> &dataMatrix, const bool precomputeDistances);
+
+        blaze::DynamicMatrix<double>
+        copyRows(const blaze::DynamicMatrix<double> &data, const std::vector<size_t> &indicesToCopy);
+
+    private:
+        const size_t NumOfClusters;
+        const bool InitKMeansPlusPlus;
+        const size_t MaxIterations;
+        const double ConvergenceDiff;
+        const bool PrecomputeDistances;
+
+        /**
+         * @brief Run Lloyd's algorithm to perform the clustering of data points.
+         * @param dataMatrix A NxD data matrix containing N data points where each point has D dimensions.
+         * @param dataMatrix Initial k centroids where k is the number of required clusters.
+         */
+        std::shared_ptr<ClusteringResult>
+        runLloydsAlgorithm(const blaze::DynamicMatrix<double> &dataMatrix, blaze::DynamicMatrix<double> initialCentroids);
     };
 
 }
