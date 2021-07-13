@@ -64,6 +64,9 @@ namespace clustering
          */
         blaze::DynamicMatrix<double>
         initCentroidsKMeansPlusPlus(const blaze::DynamicMatrix<double> &dataMatrix);
+
+        blaze::DynamicMatrix<double>
+        initCentroidsKMeansPlusPlus2(const blaze::DynamicMatrix<double> &dataMatrix);
     };
 
 }

@@ -34,6 +34,83 @@ KMeans::initCentroidsNaive(const blaze::DynamicMatrix<double> &dataPoints)
   return centers;
 }
 
+
+blaze::DynamicMatrix<double>
+KMeans::initCentroidsKMeansPlusPlus2(const blaze::DynamicMatrix<double> &matrix)
+{
+  utils::Random random;
+  size_t n = matrix.rows();
+  size_t d = matrix.columns();
+  auto k = this->numOfClusters;
+  blaze::DynamicMatrix<double> centroids(k, d);
+  
+  // Compute squared pairwise distances between points.
+  auto M = matrix * blaze::trans(matrix);
+  blaze::DynamicVector<double> diagM(n);
+  diagM = blaze::diagonal(M);
+  blaze::DynamicVector<double> ones(n);
+  ones = 1;
+  auto h = diagM * blaze::trans(ones);
+  blaze::DynamicMatrix<double> squaredPairwiseDistances(h + blaze::trans(h) - 2*M);
+
+  // Track which points are picked as centers.
+  std::vector<size_t> pickedPointsAsCenters;
+  pickedPointsAsCenters.reserve(k);
+
+  for (size_t c = 0; c < k; c++)
+  {
+    size_t centerIndex = 0;
+
+    if (c == 0)
+    {
+      // Pick the first centroid uniformly at random.
+      auto randomPointGenerator = random.getIndexer(n);
+      centerIndex = randomPointGenerator.next();
+    }
+    else
+    {
+      printf(" -> Computing smallest distances for c=%ld\n", c);
+      blaze::DynamicVector<double> smallestDistances(n);
+      for (size_t p1 = 0; p1 < n; p1++)
+      {
+        double smallestDistance = std::numeric_limits<double>::max();
+
+        // Loop through previously selected center points.
+        for (size_t p2 : pickedPointsAsCenters)
+        {
+          if (p1 == p2)
+          {
+            // Do not consider the same point.
+            continue;
+          }
+
+          double distance = squaredPairwiseDistances.at(p1, p2);
+
+          // Decide if current distance is better.
+          if (distance < smallestDistance)
+          {
+            smallestDistance = distance;
+          }
+        }
+
+        smallestDistances[p1] = smallestDistance;
+      }
+      
+      // Normalise.
+      smallestDistances /= blaze::sum(smallestDistances);
+
+      // Pick the index of a point randomly selected based on the weights.
+      centerIndex = random.choice(smallestDistances);
+    }
+
+    std::cout << "Center index for " << c << " => " << centerIndex << "\n";
+    pickedPointsAsCenters.push_back(centerIndex);
+  }
+  
+
+  return centroids;
+}
+
 blaze::DynamicMatrix<double>
 KMeans::initCentroidsKMeansPlusPlus(const blaze::DynamicMatrix<double> &matrix)
 {
