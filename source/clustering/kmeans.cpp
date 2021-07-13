@@ -112,7 +112,6 @@ KMeans::initCentroidsKMeansPlusPlus2(const blaze::DynamicMatrix<double> &matrix)
     size_t pointIndex = pickedPointsAsCenters[c];
     blaze::row(centroids, c) = blaze::row(matrix, pointIndex);
   }
-
   return centroids;
 }
 
@@ -184,6 +183,105 @@ KMeans::initCentroidsKMeansPlusPlus(const blaze::DynamicMatrix<double> &matrix)
     blaze::row(centroids, c) = blaze::row(matrix, pointIndex);
   }
   return centroids;
+}
+
+std::vector<size_t>
+KMeans::pickInitialCentersViaKMeansPlusPlus(const blaze::DynamicMatrix<double> &matrix, const bool usePrecomputeDistances)
+{
+  utils::Random random;
+  size_t n = matrix.rows();
+  size_t d = matrix.columns();
+  auto k = this->numOfClusters;
+
+  blaze::DynamicMatrix<double> pairwiseDist;
+
+  if (usePrecomputeDistances)
+  {
+    // Compute squared pairwise distances between points.
+    printf("Precomputing pairwise squared distances between all points!\n");
+
+    auto M = matrix * blaze::trans(matrix);
+    blaze::DynamicVector<double> diagM(n);
+    diagM = blaze::diagonal(M);
+    blaze::DynamicVector<double> ones(n);
+    ones = 1;
+    auto h = diagM * blaze::trans(ones);
+    pairwiseDist = h + blaze::trans(h) - 2 * M;
+  }
+
+  // Lambda function computes the squared L2 distance between any pair of points.
+  // The function will automatically use any precomputed distance if it exists.
+  auto calcSquaredL2Norm = [matrix, pairwiseDist, usePrecomputeDistances](size_t p1, size_t p2) -> double
+  {
+    if (p1 == p2)
+    {
+      return 0.0;
+    }
+
+    if (usePrecomputeDistances)
+    {
+      return pairwiseDist.at(p1, p2);
+    }
+
+    return blaze::sqrNorm(blaze::row(matrix, p1) - blaze::row(matrix, p2));
+  };
+
+  // Track which points are picked as centers.
+  std::vector<size_t> pickedPointsAsCenters;
+  pickedPointsAsCenters.reserve(k);
+
+  for (size_t c = 0; c < k; c++)
+  {
+    size_t centerIndex = 0;
+
+    if (c == 0)
+    {
+      // Pick the first centroid uniformly at random.
+      auto randomPointGenerator = random.getIndexer(n);
+      centerIndex = randomPointGenerator.next();
+    }
+    else
+    {
+      blaze::DynamicVector<double> weights(n);
+      for (size_t p1 = 0; p1 < n; p1++)
+      {
+        double smallestDistance = std::numeric_limits<double>::max();
+
+        // Loop through previously selected clusters.
+        for (size_t p2 : pickedPointsAsCenters)
+        {
+          // Notice that for points previously picked as centers, their
+          // distances will be zero because the diagonal elements of the
+          // pairwise distance matrix are all zeros: D^2[i,i] = 0.
+          double distance = calcSquaredL2Norm(p1, p2);
+
+          // Decide if current distance is better.
+          if (distance < smallestDistance)
+          {
+            smallestDistance = distance;
+          }
+        }
+
+        // Set the weight of a given point to be the smallest distance
+        // to any of the previously selected center points. We want to
+        // select points randomly such that points that are far from
+        // any of the selected center points have higher likelihood of
+        // being picked as the next candidate center.
+        weights[p1] = smallestDistance;
+      }
+
+      // Normalise the weights.
+      weights /= blaze::sum(weights);
+
+      // Pick the index of a point randomly selected based on the weights.
+      centerIndex = random.choice(weights);
+    }
+
+    std::cout << "Center index for " << c << " => " << centerIndex << "\n";
+    pickedPointsAsCenters.push_back(centerIndex);
+  }
+
+  return pickedPointsAsCenters;
 }
 
 std::shared_ptr<ClusteringResult>

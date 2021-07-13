@@ -67,6 +67,14 @@ namespace clustering
 
         blaze::DynamicMatrix<double>
         initCentroidsKMeansPlusPlus2(const blaze::DynamicMatrix<double> &dataMatrix);
+
+        /**
+         * @brief Picks `k` points as the initial centers using the k-Means++ initialisation procedure.
+         * @param dataMatrix A NxD data matrix containing N data points where each point has D dimensions.
+         * @param precomputeDistances Whether to precompute pairwise distances.
+         */
+        std::vector<size_t>
+        pickInitialCentersViaKMeansPlusPlus(const blaze::DynamicMatrix<double> &dataMatrix, const bool precomputeDistances);
     };
 
 }
