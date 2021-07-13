@@ -7,7 +7,6 @@
 #include <fstream>
 
 #include <blaze/Math.h>
-
 #include <boost/array.hpp>
 #include <boost/range/algorithm_ext/erase.hpp>
 #include <boost/algorithm/string.hpp>
@@ -17,24 +16,11 @@
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/filter/bzip2.hpp>
 
+#include <data/data_parser.hpp>
+
 namespace data
 {
-    /**
-     * Represents a data parser.
-     */
-    class IDataParser
-    {
-    public:
-        virtual ~IDataParser() {}
-
-        /**
-         * Parses the given file and converts it into a data matrix.
-         */
-        virtual std::shared_ptr<blaze::DynamicMatrix<double>>
-        parse(const std::string &filePath) = 0; // pure virtual method
-    };
-
-    class BagOfWordsParser
+    class BagOfWordsParser : public data::IDataParser
     {
     public:
         std::shared_ptr<blaze::DynamicMatrix<double>>

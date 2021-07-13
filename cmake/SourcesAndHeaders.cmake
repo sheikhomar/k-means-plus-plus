@@ -8,6 +8,7 @@ set(headers
     include/coresets/sensitivity_sampling.hpp
     include/coresets/stream_km.hpp
     include/data/bow_parser.hpp
+    include/data/data_parser.hpp
     include/utils/random.hpp
 )
 
