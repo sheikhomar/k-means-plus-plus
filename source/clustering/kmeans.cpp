@@ -123,40 +123,38 @@ KMeans::initCentroidsKMeansPlusPlus(const blaze::DynamicMatrix<double> &matrix)
   size_t n = matrix.rows();
   size_t d = matrix.columns();
   auto k = this->numOfClusters;
-  auto randomPointGenerator = random.getIndexer(n);
 
-  blaze::DynamicMatrix<double> centroids(k, d);
-  std::vector<uint> availableIndices(n);
-
-  // Fill with 0, 1, 2, ..., N.
-  std::iota(availableIndices.begin(), availableIndices.end(), 0);
+  // Track which points are picked as centers.
+  std::vector<size_t> pickedPointsAsCenters;
+  pickedPointsAsCenters.reserve(k);
 
   for (size_t c = 0; c < k; c++)
   {
-    size_t centroidIndex = 0;
+    size_t centerIndex = 0;
 
     if (c == 0)
     {
       // Pick the first centroid uniformly at random.
-      centroidIndex = randomPointGenerator.next();
+      auto randomPointGenerator = random.getIndexer(n);
+      centerIndex = randomPointGenerator.next();
     }
     else
     {
-
-      blaze::DynamicVector<double> smallestDistances(n);
-
-      // For each point, find the distance to the nearest centroid for all
-      // the centroids that are select so far.
-      for (uint p : availableIndices)
+      blaze::DynamicVector<double> weights(n);
+      for (size_t p1 = 0; p1 < n; p1++)
       {
         double smallestDistance = std::numeric_limits<double>::max();
 
         // Loop through previously selected clusters.
-        for (size_t c2 = 0; c2 < c; c2++)
+        for (size_t p2 : pickedPointsAsCenters)
         {
+          double distance = 0.0;
 
-          // Compute the L2 norm between point p and centroid c2.
-          const double distance = blaze::norm(blaze::row(matrix, p) - blaze::row(centroids, c2));
+          if (p1 != p2)
+          {
+            // Compute the squared L2 norm between point p1 and center p2.
+            distance = blaze::sqrNorm(blaze::row(matrix, p1) - blaze::row(matrix, p2));
+          }
 
           // Decide if current distance is better.
           if (distance < smallestDistance)
@@ -165,34 +163,26 @@ KMeans::initCentroidsKMeansPlusPlus(const blaze::DynamicMatrix<double> &matrix)
           }
         }
 
-        smallestDistances[p] = smallestDistance;
+        weights[p1] = smallestDistance;
       }
 
-      // Pick a point based on a weighted probability
-
-      // Square distances
-      smallestDistances *= smallestDistances;
-
-      // Normalise.
-      smallestDistances /= blaze::sum(smallestDistances);
+      // Normalise the weights.
+      weights /= blaze::sum(weights);
 
       // Pick the index of a point randomly selected based on the weights.
-      size_t nextClusterCandidate = random.choice(smallestDistances);
-
-      // Assign centroid index.
-      centroidIndex = availableIndices[nextClusterCandidate];
+      centerIndex = random.choice(weights);
     }
 
-    std::cout << "Centroid index for " << c << " => " << centroidIndex << "\n";
-
-    // Copy point over centroids matrix.
-    blaze::row(centroids, c) = blaze::row(matrix, centroidIndex);
-
-    // Remove it from the candidate list so the point cannot be
-    // picked as another centroid.
-    boost::remove_erase(availableIndices, centroidIndex);
+    std::cout << "Centroid index for " << c << " => " << centerIndex << "\n";
+    pickedPointsAsCenters.push_back(centerIndex);
   }
 
+  blaze::DynamicMatrix<double> centroids(k, d);
+  for (size_t c = 0; c < k; c++)
+  {
+    size_t pointIndex = pickedPointsAsCenters[c];
+    blaze::row(centroids, c) = blaze::row(matrix, pointIndex);
+  }
   return centroids;
 }
 
