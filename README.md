@@ -43,16 +43,15 @@ sudo make install
 # echo "export PATH=/usr/local/share/cmake-3.20:\$PATH" >> ~/.bashrc
 ```
 
-Install Boost 1.66.0:
+Install Boost 1.76.0:
 
 ```
 sudo apt-get update
 sudo apt-get install build-essential g++ python-dev autotools-dev libicu-dev libbz2-dev libboost-all-dev
-curl https://kumisystems.dl.sourceforge.net/project/boost/boost/1.66.0/boost_1_66_0.7z --output boost_1_66_0.7z
-7z x boost_1_66_0.7z
-rm boost_1_66_0.7z
-cd boost_1_66_0
-./bootstrap.sh --prefix=/usr/
+wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz 
+tar -xf boost_1_76_0.tar.gz
+cd boost_1_76_0
+./bootstrap.sh
 ./b2
 sudo ./b2 install
 ```
