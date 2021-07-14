@@ -99,3 +99,16 @@ mkdir -p data/results
     curl http://homepages.uni-paderborn.de/frahling/instances/Tower.txt \
         --output data/raw/Tower.txt
     ```
+
+## Run experiment
+
+Install PyEnv & Python 3.8
+```bash
+git clone https://github.com/pyenv/pyenv.git ~/.pyenv
+cd ~/.pyenv && src/configure && make -C src
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+echo 'eval "$(pyenv init --path)"' >> ~/.bashrc
+source ~/.bashrc
+pyenv install 3.8.11
+```
