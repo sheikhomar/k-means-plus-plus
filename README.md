@@ -29,6 +29,18 @@ curl https://archive.ics.uci.edu/ml/machine-learning-databases/bag-of-words/docw
   --output data/raw/docword.enron.txt.gz
 ```
 
+Upgrade CMake:
+
+```bash
+sudo apt install build-essential libssl-dev
+wget https://github.com/Kitware/CMake/releases/download/v3.20.2/cmake-3.20.2.tar.gz
+tar -zxvf cmake-3.20.2.tar.gz
+cd cmake-3.20.2
+./bootstrap
+make 
+sudo make install
+```
+
 Build via CMake:
 
 ```bash
