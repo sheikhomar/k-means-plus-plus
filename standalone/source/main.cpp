@@ -7,6 +7,7 @@
 #include <data/bow_parser.hpp>
 #include <data/census_parser.hpp>
 #include <data/covertype_parser.hpp>
+#include <data/tower_parser.hpp>
 
 using namespace std;
 using namespace clustering;
@@ -158,8 +159,11 @@ int main() {
   // auto parser = CensusParser();
   // auto parsedData = parser.parse("data/raw/USCensus1990.data.txt");
 
-  auto parser = CovertypeParser();
-  auto parsedData = parser.parse("data/raw/covtype.data.gz");
+  // auto parser = CovertypeParser();
+  // auto parsedData = parser.parse("data/raw/covtype.data.gz");
+
+  auto parser = TowerParser();
+  auto parsedData = parser.parse("data/raw/Tower.txt");
 
   printf("Data loading completed!\n");
   

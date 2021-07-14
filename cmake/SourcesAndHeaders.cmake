@@ -11,6 +11,7 @@ set(headers
     include/data/census_parser.hpp
     include/data/covertype_parser.hpp
     include/data/data_parser.hpp
+    include/data/tower_parser.hpp
     include/utils/random.hpp
 )
 
@@ -26,6 +27,7 @@ set(sources
     source/data/bow_parser.cpp
     source/data/census_parser.cpp
     source/data/covertype_parser.cpp
+    source/data/tower_parser.cpp
     source/utils/random.cpp
 )
 
