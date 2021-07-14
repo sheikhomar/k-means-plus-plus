@@ -27,10 +27,8 @@ CensusParser::parse(const std::string &filePath)
 
     printf("Data size: %ld, Dimensions: %ld\n", dataSize, dimSize);
 
-    bool firstDataLine = true;
-    size_t previousDocId = 0, currentRow = 0, docId = 0, wordId = 0;
+    size_t currentRow = 0;
     size_t lineNo = 3;
-    double count;
 
     auto data = std::make_shared<blaze::DynamicMatrix<double>>(dataSize, dimSize);
     data->reset();
