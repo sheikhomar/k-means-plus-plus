@@ -102,7 +102,8 @@ mkdir -p data/results
 
 ## Run experiment
 
-Install PyEnv & Python 3.8
+Install PyEnv & Python 3.8:
+
 ```bash
 git clone https://github.com/pyenv/pyenv.git ~/.pyenv
 cd ~/.pyenv && src/configure && make -C src
