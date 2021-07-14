@@ -6,6 +6,7 @@
 #include <coresets/stream_km.hpp>
 #include <data/bow_parser.hpp>
 #include <data/census_parser.hpp>
+#include <data/covertype_parser.hpp>
 
 using namespace std;
 using namespace clustering;
@@ -154,8 +155,11 @@ int main() {
   //   printf(" %ld with weight %0.4f\n", point->Index, point->Weight);
   // }
   
-  auto parser = CensusParser();
-  auto parsedData = parser.parse("data/raw/USCensus1990.data.txt");
+  // auto parser = CensusParser();
+  // auto parsedData = parser.parse("data/raw/USCensus1990.data.txt");
+
+  auto parser = CovertypeParser();
+  auto parsedData = parser.parse("data/raw/covtype.data.gz");
 
   printf("Data loading completed!\n");
   

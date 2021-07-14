@@ -9,6 +9,7 @@ set(headers
     include/coresets/stream_km.hpp
     include/data/bow_parser.hpp
     include/data/census_parser.hpp
+    include/data/covertype_parser.hpp
     include/data/data_parser.hpp
     include/utils/random.hpp
 )
@@ -24,6 +25,7 @@ set(sources
     source/coresets/stream_km.cpp
     source/data/bow_parser.cpp
     source/data/census_parser.cpp
+    source/data/covertype_parser.cpp
     source/utils/random.cpp
 )
 
