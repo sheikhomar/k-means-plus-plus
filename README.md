@@ -39,6 +39,8 @@ cd cmake-3.20.2
 ./bootstrap
 make 
 sudo make install
+# sudo apt-get remove cmake cmake-data
+# echo "export PATH=/usr/local/share/cmake-3.20:\$PATH" >> ~/.bashrc
 ```
 
 Build via CMake:
